@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://causaanimal-production.up.railway.app/api';
+const API_URL = 'https://eu-nao-aceito-maus-tratos-production.up.railway.app/api';
 
 const api = axios.create({
   baseURL: API_URL,

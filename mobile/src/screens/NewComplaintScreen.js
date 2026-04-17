@@ -512,13 +512,13 @@ const styles = StyleSheet.create({
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
-    paddingHorizontal: 14, paddingVertical: 7,
-    borderRadius: 20, backgroundColor: '#fff',
-    borderWidth: 1.5, borderColor: '#D1FAE5',
+    paddingHorizontal: 14, paddingVertical: 10,
+    borderRadius: 20, backgroundColor: '#E8F5E9',
+    borderWidth: 1.5, borderColor: '#52B788',
   },
   chipActive: { backgroundColor: '#1B4332', borderColor: '#1B4332' },
-  chipActiveRed: { backgroundColor: '#F4A261', borderColor: '#F4A261' },
-  chipText: { fontSize: 13, fontWeight: '600', color: '#374151' },
+  chipActiveRed: { backgroundColor: '#1B4332', borderColor: '#1B4332' },
+  chipText: { fontSize: 16, fontWeight: '700', color: '#1B4332' },
   chipTextActive: { color: '#fff' },
 
   locationWarning: {

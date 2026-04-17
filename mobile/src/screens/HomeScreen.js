@@ -207,7 +207,7 @@ export default function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F0F7F4' },
-  scroll: { flexGrow: 1, paddingBottom: 20 },
+  scroll: { flex: 1 },
 
   /* ── HEADER ── */
   header: {
@@ -261,24 +261,24 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   logoImage: {
-    width: 52,
-    height: 52,
-    borderRadius: 10,
+    width: 70,
+    height: 70,
+    borderRadius: 12,
     resizeMode: 'contain',
-    marginRight: 12,
+    marginRight: 14,
   },
   logoTexts: {},
   logoLine1: {
     color: '#ffffff',
-    fontSize: 13,
+    fontSize: 17,
     fontWeight: 'bold',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
   logoLine2: {
     color: '#d8610c',
-    fontSize: 15,
+    fontSize: 21,
     fontWeight: 'bold',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
 
   greeting: {
@@ -304,8 +304,11 @@ const styles = StyleSheet.create({
 
   /* ── BODY ── */
   body: {
+    flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 18,
+    paddingBottom: 18,
+    justifyContent: 'space-between',
   },
 
   /* ── CARDS ── */
@@ -314,7 +317,7 @@ const styles = StyleSheet.create({
   cardWrapper: { flex: 1 },
   card: {
     borderRadius: 18,
-    minHeight: 110,
+    minHeight: 148,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -346,13 +349,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     zIndex: 1,
   },
-  cardIcon: { fontSize: 28, marginBottom: 5 },
+  cardIcon: { fontSize: 34, marginBottom: 7 },
   cardTitle: {
-    fontSize: 13, fontWeight: '900', color: '#ffffff',
-    lineHeight: 18, marginBottom: 2,
+    fontSize: 16, fontWeight: '900', color: '#ffffff',
+    lineHeight: 22, marginBottom: 4,
   },
   cardSubtitle: {
-    fontSize: 10, color: '#ffffff', opacity: 0.8, lineHeight: 14,
+    fontSize: 13, color: '#ffffff', opacity: 0.85, lineHeight: 18,
   },
 
   badge: {
@@ -367,7 +370,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 14,
-    marginTop: 14,
     alignItems: 'center',
     shadowColor: '#1B4332',
     shadowOffset: { width: 0, height: 2 },
@@ -388,7 +390,6 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 10,
   },
   statCard: {
     flex: 1,
