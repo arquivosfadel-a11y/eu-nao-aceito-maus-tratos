@@ -40,18 +40,10 @@ const sendPushNotification = async (pushToken, title, body, data = {}) => {
 
 const createComplaint = async (req, res) => {
   try {
-    const { title, description, category, latitude, longitude, address, neighborhood } = req.body;
+    const { title, description, category, latitude, longitude, address, neighborhood, city_id } = req.body;
 
-    const city_id_final = req.user.city_id;
-
-    if (!city_id_final) {
-      return res.status(400).json({ success: false, message: 'Usuário não está vinculado a nenhuma cidade.' });
-    }
-
-    const city = await City.findByPk(city_id_final);
-    if (!city || !city.is_active) {
-      return res.status(400).json({ success: false, message: 'Cidade não encontrada ou não ativa na plataforma' });
-    }
+    // city_id é opcional — vem do body (GPS da denúncia) ou do cadastro do usuário como fallback
+    const city_id_final = city_id || req.user.city_id || null;
 
     let images = [];
     if (req.files && req.files.length > 0) {

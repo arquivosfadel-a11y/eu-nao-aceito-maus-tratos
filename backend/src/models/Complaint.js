@@ -41,7 +41,7 @@ const Complaint = sequelize.define('Complaint', {
   },
   city_id: {
     type: DataTypes.UUID,
-    allowNull: false
+    allowNull: true
   },
   department_id: {
     type: DataTypes.UUID,
