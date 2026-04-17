@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Eu Não Aceito Maus Tratos",
+    "slug": "eu-nao-aceito-maus-tratos",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1B4332"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.vetechsystems.eunao"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B4332"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "br.com.vetechsystems.eunao"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
