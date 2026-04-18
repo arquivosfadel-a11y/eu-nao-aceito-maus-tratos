@@ -175,3 +175,13 @@
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
+
+@keyframes ripple {
+  0%   { transform: scale(0); opacity: 0.5; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@keyframes shimmer-slide {
+  0%   { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(200%); }
+}

@@ -1,14 +1,16 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
-const navLinks = [
+const NAV_LINKS = [
   { label: "Como Funciona", href: "#como-funciona" },
-  { label: "Impacto", href: "#numeros" },
   { label: "Adoção", href: "#adocao" },
   { label: "Painel Admin", href: "/login" },
+  { label: "Baixe o App", href: "#" },
 ];
 
-const socialLinks = [
+const SOCIAL_LINKS = [
   {
     label: "Instagram",
     href: "#",
@@ -31,35 +33,65 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-[#0A0A0A] text-white relative">
-      {/* Orange top stripe */}
-      <div className="h-1 w-full bg-gradient-to-r from-[#E8682A] via-[#F4A261] to-[#E8682A]" />
+    <footer className="relative text-white overflow-hidden" style={{ backgroundColor: "#1B4332" }}>
+      {/* Paw pattern background */}
+      <div
+        className="absolute inset-0 pointer-events-none select-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Ctext x='16' y='44' font-size='32' fill='%23ffffff' opacity='0.04'%3E%F0%9F%90%BE%3C/text%3E%3C/svg%3E")`,
+          backgroundSize: "64px 64px",
+        }}
+        aria-hidden="true"
+      />
 
-      <div className="max-w-6xl mx-auto px-6 pt-16 pb-10">
+      {/* Shimmer stripe at top */}
+      <div className="relative h-1.5 overflow-hidden" style={{ backgroundColor: "#d8610c" }}>
+        <span
+          className="absolute inset-y-0 w-1/3"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)",
+            animation: "shimmer-slide 2.8s ease-in-out infinite",
+          }}
+          aria-hidden="true"
+        />
+      </div>
+
+      <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-          {/* Brand */}
-          <div className="md:col-span-1">
+          {/* Col 1 — Brand */}
+          <div>
             <div className="flex items-center gap-3 mb-4">
-              <Image src="/logo.png" alt="Logo" width={44} height={44} className="rounded-full" />
-              <span className="font-black text-lg leading-tight">
-                Eu Não Aceito
-                <br />
-                <span className="text-[#E8682A]">Maus Tratos</span>
+              <Image src="/logo.png" alt="Eu Não Aceito Maus Tratos" width={44} height={44} className="rounded-full" />
+              <span className="font-black text-base leading-tight uppercase tracking-tight">
+                Eu Não Aceito<br />
+                <span style={{ color: "#F4A261" }}>Maus Tratos</span>
               </span>
             </div>
-            <p className="text-white/40 text-sm leading-relaxed font-medium max-w-xs">
-              Plataforma de denúncias de maus tratos a animais. Conectando
-              cidadãos, validadores e protetores em prol da vida animal.
+            <p className="text-sm leading-relaxed max-w-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Cada denúncia salva uma vida. Plataforma que conecta cidadãos, validadores e protetores em prol da vida animal.
             </p>
             <div className="flex gap-3 mt-6">
-              {socialLinks.map((s) => (
+              {SOCIAL_LINKS.map((s) => (
                 <a
                   key={s.label}
                   href={s.href}
                   aria-label={s.label}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/5 hover:bg-[#E8682A] border border-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white transition-all duration-200 cursor-pointer"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer"
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    color: "rgba(255,255,255,0.55)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = "#d8610c";
+                    (e.currentTarget as HTMLElement).style.color = "#fff";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.06)";
+                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)";
+                  }}
                 >
                   {s.icon}
                 </a>
@@ -67,17 +99,21 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Navigation */}
+          {/* Col 2 — Links */}
           <div>
-            <h3 className="font-black text-xs uppercase tracking-widest text-[#E8682A] mb-6">
+            <h3
+              className="text-xs font-black uppercase tracking-widest mb-6"
+              style={{ color: "#d8610c" }}
+            >
               Plataforma
             </h3>
             <ul className="space-y-3">
-              {navLinks.map((link) => (
+              {NAV_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-white/40 hover:text-white text-sm font-medium transition-colors duration-200 cursor-pointer"
+                    className="text-sm font-medium transition-colors duration-200 cursor-pointer hover:text-white"
+                    style={{ color: "rgba(255,255,255,0.45)" }}
                   >
                     {link.label}
                   </Link>
@@ -86,12 +122,15 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Col 3 — Contact */}
           <div>
-            <h3 className="font-black text-xs uppercase tracking-widest text-[#E8682A] mb-6">
+            <h3
+              className="text-xs font-black uppercase tracking-widest mb-6"
+              style={{ color: "#d8610c" }}
+            >
               VETech Systems
             </h3>
-            <ul className="space-y-3 text-sm text-white/40 font-medium">
+            <ul className="space-y-3 text-sm font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
               <li>
                 <a
                   href="https://www.vetechsystems.com.br"
@@ -119,47 +158,18 @@ export function Footer() {
                 </a>
               </li>
             </ul>
-
-            <div className="mt-8">
-              <p className="text-xs text-[#E8682A] font-bold uppercase tracking-widest mb-3">
-                Baixe o App
-              </p>
-              <div className="flex flex-col gap-2">
-                {[
-                  { label: "App Store", icon: "M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" },
-                  { label: "Google Play", icon: "M3 20.5v-17c0-.83.94-1.3 1.6-.8l14 8.5c.6.36.6 1.24 0 1.6l-14 8.5c-.66.5-1.6.03-1.6-.8z" },
-                ].map(({ label, icon }) => (
-                  <a
-                    key={label}
-                    href="#"
-                    className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d={icon} />
-                    </svg>
-                    {label}
-                  </a>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-white/30 text-xs font-medium">
-            © {new Date().getFullYear()} Eu Não Aceito Maus Tratos. Desenvolvido por{" "}
-            <a
-              href="https://www.vetechsystems.com.br"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/60 hover:text-[#E8682A] transition-colors cursor-pointer font-bold"
-            >
-              VETech Systems
-            </a>
-            .
+        <div
+          className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>
+            © {new Date().getFullYear()} VETech Systems — Eu Não Aceito Maus Tratos
           </p>
-          <div className="flex gap-6 text-xs text-white/30 font-medium">
+          <div className="flex gap-6 text-xs font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>
             <Link href="#" className="hover:text-white transition-colors cursor-pointer">Privacidade</Link>
             <Link href="#" className="hover:text-white transition-colors cursor-pointer">Termos de Uso</Link>
           </div>

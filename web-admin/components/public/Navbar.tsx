@@ -1,54 +1,55 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+
+const NAV_LINKS = [
+  { label: "Como Funciona", href: "#como-funciona" },
+  { label: "Adoção", href: "#adocao" },
+  { label: "Painel Admin", href: "/login" },
+];
 
 export function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { scrollY } = useScroll();
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const bgOpacity = useTransform(scrollY, [0, 80], [0, 0.95]);
+  const shadowOpacity = useTransform(scrollY, [0, 80], [0, 0.25]);
+  const blurAmount = useTransform(scrollY, [0, 80], [0, 12]);
 
   return (
     <motion.nav
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-[#1B4332]/95 backdrop-blur-md shadow-lg shadow-black/20"
-          : "bg-transparent"
-      }`}
+      className="fixed top-0 inset-x-0 z-50"
+      style={{
+        backdropFilter: useTransform(blurAmount, (v) => `blur(${v}px)`),
+        backgroundColor: useTransform(bgOpacity, (v) => `rgba(27, 67, 50, ${v})`),
+        boxShadow: useTransform(shadowOpacity, (v) => `0 4px 24px rgba(0,0,0,${v})`),
+      }}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-          <div className="relative">
-            <Image
-              src="/logo.png"
-              alt="Eu Não Aceito Maus Tratos"
-              width={38}
-              height={38}
-              className="rounded-full"
-            />
-          </div>
-          <span className="font-black text-white text-sm leading-tight hidden sm:block">
-            Eu Não Aceito<br />
-            <span className="text-[#F4A261]">Maus Tratos</span>
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-3 cursor-pointer flex-shrink-0">
+          <Image
+            src="/logo.png"
+            alt="Eu Não Aceito Maus Tratos"
+            width={40}
+            height={40}
+            className="rounded-full"
+          />
+          <span className="font-black text-white text-xs leading-tight hidden sm:block uppercase tracking-tight">
+            EU NÃO ACEITO<br />
+            <span className="text-[#F4A261]">MAUS TRATOS</span>
           </span>
         </Link>
 
+        {/* Desktop links */}
         <div className="hidden md:flex items-center gap-8">
-          {[
-            { label: "Denunciar", href: "#como-funciona" },
-            { label: "Como Funciona", href: "#como-funciona" },
-            { label: "Adoção", href: "#adocao" },
-          ].map((item) => (
+          {NAV_LINKS.map((item) => (
             <Link
               key={item.label}
               href={item.href}
@@ -57,14 +58,25 @@ export function Navbar() {
               {item.label}
             </Link>
           ))}
+        </div>
+
+        {/* CTA Button — Denunciar with pulse */}
+        <div className="hidden md:flex items-center">
           <Link
-            href="/login"
-            className="text-sm font-bold bg-[#E8682A] hover:bg-[#F4A261] text-black px-5 py-2.5 rounded-full transition-all duration-200 cursor-pointer shadow-md hover:shadow-[#E8682A]/40 hover:shadow-lg"
+            href="#denunciar"
+            className="relative text-sm font-extrabold text-white px-6 py-2.5 rounded-full cursor-pointer overflow-hidden"
+            style={{ backgroundColor: "#d8610c" }}
           >
-            Painel Admin
+            <span
+              className="absolute inset-0 rounded-full animate-ping opacity-30"
+              style={{ backgroundColor: "#d8610c" }}
+              aria-hidden="true"
+            />
+            <span className="relative z-10">Denunciar</span>
           </Link>
         </div>
 
+        {/* Mobile hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Abrir menu"
@@ -80,16 +92,31 @@ export function Navbar() {
         </button>
       </div>
 
+      {/* Mobile menu */}
       {menuOpen && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="md:hidden bg-[#1B4332]/98 border-t border-white/10 px-6 py-4 flex flex-col gap-4"
         >
-          <Link href="#como-funciona" onClick={() => setMenuOpen(false)} className="text-white/80 font-semibold cursor-pointer">Como Funciona</Link>
-          <Link href="#numeros" onClick={() => setMenuOpen(false)} className="text-white/80 font-semibold cursor-pointer">Impacto</Link>
-          <Link href="#adocao" onClick={() => setMenuOpen(false)} className="text-white/80 font-semibold cursor-pointer">Adoção</Link>
-          <Link href="/login" className="bg-[#E8682A] text-black font-bold px-5 py-2.5 rounded-full text-center cursor-pointer">Painel Admin</Link>
+          {NAV_LINKS.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={() => setMenuOpen(false)}
+              className="text-white/80 font-semibold cursor-pointer hover:text-white transition-colors"
+            >
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            href="#denunciar"
+            className="font-extrabold text-white text-center py-2.5 rounded-full cursor-pointer"
+            style={{ backgroundColor: "#d8610c" }}
+            onClick={() => setMenuOpen(false)}
+          >
+            Denunciar
+          </Link>
         </motion.div>
       )}
     </motion.nav>

@@ -1,207 +1,292 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { ParticlesPaws } from "./ParticlesPaws";
 
-const PARTICLES = [
-  { x: "8%",  y: "15%", size: 3, dur: 6,  delay: 0   },
-  { x: "22%", y: "72%", size: 2, dur: 8,  delay: 1.2 },
-  { x: "35%", y: "30%", size: 4, dur: 7,  delay: 0.5 },
-  { x: "50%", y: "85%", size: 2, dur: 9,  delay: 2   },
-  { x: "63%", y: "20%", size: 3, dur: 6,  delay: 1.8 },
-  { x: "78%", y: "60%", size: 5, dur: 10, delay: 0.3 },
-  { x: "90%", y: "40%", size: 2, dur: 7,  delay: 3   },
-  { x: "15%", y: "50%", size: 3, dur: 8,  delay: 1.5 },
-  { x: "45%", y: "10%", size: 2, dur: 9,  delay: 2.5 },
-  { x: "70%", y: "90%", size: 4, dur: 6,  delay: 0.8 },
-  { x: "55%", y: "55%", size: 2, dur: 11, delay: 1.1 },
-  { x: "5%",  y: "80%", size: 3, dur: 7,  delay: 3.5 },
-  { x: "88%", y: "12%", size: 2, dur: 8,  delay: 0.7 },
-  { x: "30%", y: "65%", size: 4, dur: 9,  delay: 2.2 },
-  { x: "72%", y: "35%", size: 2, dur: 6,  delay: 1.6 },
-  { x: "42%", y: "48%", size: 3, dur: 10, delay: 4   },
-  { x: "18%", y: "92%", size: 2, dur: 7,  delay: 0.4 },
-  { x: "95%", y: "70%", size: 3, dur: 8,  delay: 2.8 },
+const TITLE_WORDS_WHITE = ["Seja", "a", "voz"];
+const TITLE_WORDS_ORANGE = ["de", "quem", "não", "pode", "falar."];
+
+const PHOTOS = [
+  {
+    src: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=80",
+    alt: "Cachorro resgatado olhando para a câmera",
+    large: true,
+  },
+  {
+    src: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80",
+    alt: "Cão feliz após resgate",
+    large: false,
+  },
+  {
+    src: "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&q=80",
+    alt: "Gato em lar temporário",
+    large: false,
+  },
 ];
 
-const TITLE_LINE2 = "ACEITO.";
+function PhotoGrid() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-export function HeroSection() {
-  const [chars2, setChars2] = useState(0);
-  const [line1Done, setLine1Done] = useState(false);
-  const [line1Visible, setLine1Visible] = useState(false);
+  const rotateX = useSpring(useTransform(mouseY, [-200, 200], [6, -6]), { stiffness: 120, damping: 20 });
+  const rotateY = useSpring(useTransform(mouseX, [-200, 200], [-6, 6]), { stiffness: 120, damping: 20 });
 
-  useEffect(() => {
-    const t1 = setTimeout(() => setLine1Visible(true), 400);
-    const t2 = setTimeout(() => setLine1Done(true), 1400);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+  function onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    mouseX.set(e.clientX - cx);
+    mouseY.set(e.clientY - cy);
+  }
 
-  useEffect(() => {
-    if (!line1Done) return;
-    if (chars2 >= TITLE_LINE2.length) return;
-    const timer = setTimeout(() => setChars2((c) => c + 1), 80);
-    return () => clearTimeout(timer);
-  }, [line1Done, chars2]);
+  function onMouseLeave() {
+    mouseX.set(0);
+    mouseY.set(0);
+  }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0A0A0A]">
-      {/* Gradient fade to green at bottom */}
-      <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#1B4332]/60 to-transparent pointer-events-none" />
-
-      {/* Particles */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        {PARTICLES.map((p, i) => (
-          <span
-            key={i}
-            className="absolute rounded-full bg-[#E8682A] opacity-40"
-            style={{
-              left: p.x,
-              top: p.y,
-              width: p.size,
-              height: p.size,
-              animation: `float ${p.dur}s ease-in-out ${p.delay}s infinite`,
-            }}
-          />
-        ))}
+    <motion.div
+      className="grid grid-cols-2 grid-rows-2 gap-3 h-[520px] lg:h-[580px]"
+      style={{ rotateX, rotateY, perspective: 1200, transformStyle: "preserve-3d" }}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      initial={{ opacity: 0, x: 60 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.9, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {/* Large photo — spans 2 rows left column */}
+      <div className="row-span-2 relative overflow-hidden rounded-[20px] shadow-2xl shadow-black/40">
+        <Image
+          src={PHOTOS[0].src}
+          alt={PHOTOS[0].alt}
+          fill
+          className="object-cover"
+          sizes="(max-width: 1024px) 45vw, 280px"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
       </div>
 
-      {/* Subtle radial glow center */}
+      {/* Small photo top-right */}
+      <div className="relative overflow-hidden rounded-[20px] shadow-xl shadow-black/30">
+        <Image
+          src={PHOTOS[1].src}
+          alt={PHOTOS[1].alt}
+          fill
+          className="object-cover"
+          sizes="(max-width: 1024px) 45vw, 200px"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+      </div>
+
+      {/* Small photo bottom-right */}
+      <div className="relative overflow-hidden rounded-[20px] shadow-xl shadow-black/30">
+        <Image
+          src={PHOTOS[2].src}
+          alt={PHOTOS[2].alt}
+          fill
+          className="object-cover"
+          sizes="(max-width: 1024px) 45vw, 200px"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+      </div>
+    </motion.div>
+  );
+}
+
+export function HeroSection() {
+  return (
+    <section
+      className="relative min-h-screen flex items-center overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%)" }}
+    >
+      {/* Paw particles background */}
+      <ParticlesPaws />
+
+      {/* Subtle radial overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(232,104,42,0.06) 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(ellipse 70% 60% at 30% 50%, rgba(255,255,255,0.03) 0%, transparent 70%)" }}
+        aria-hidden="true"
       />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center pt-20 pb-12">
-        {/* Abril Laranja badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-8 flex justify-center"
-        >
-          <span className="inline-flex items-center gap-2 bg-[#E8682A]/15 border border-[#E8682A]/30 text-[#F4A261] text-xs font-bold px-5 py-2 rounded-full tracking-widest uppercase">
-            <span className="w-2 h-2 rounded-full bg-[#E8682A] animate-pulse inline-block" />
-            Abril Laranja — Mês de Prevenção contra Maus Tratos
-          </span>
-        </motion.div>
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-24 pb-16">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
 
-        {/* Logo with orange pulse glow */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="mb-10 flex justify-center"
-        >
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-[#E8682A]/30 blur-xl animate-[pulse-orange_3s_ease-in-out_infinite]" />
-            <Image
-              src="/logo.png"
-              alt="Eu Não Aceito Maus Tratos"
-              width={110}
-              height={110}
-              className="relative rounded-full drop-shadow-2xl"
-              priority
-            />
-          </div>
-        </motion.div>
+          {/* ── Left: Text (55%) ── */}
+          <div className="flex-1 lg:w-[55%] flex flex-col items-start">
 
-        {/* Typewriter title */}
-        <div className="mb-8">
-          <div className="text-7xl sm:text-8xl md:text-9xl font-black leading-none tracking-tighter">
-            {/* Line 1 */}
-            <div className="text-white overflow-hidden">
-              <motion.span
-                initial={{ y: "100%" }}
-                animate={line1Visible ? { y: "0%" } : { y: "100%" }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="block"
+            {/* Badge — Abril Laranja */}
+            <motion.div
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="mb-6"
+            >
+              <span
+                className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2 rounded-full uppercase tracking-widest relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(90deg, rgba(216,97,12,0.18) 0%, rgba(244,162,97,0.18) 100%)",
+                  border: "1px solid rgba(216,97,12,0.35)",
+                  color: "#F4A261",
+                }}
               >
-                EU NÃO
-              </motion.span>
-            </div>
-            {/* Line 2 — typewriter */}
-            <div className="text-[#E8682A] min-h-[1em] flex items-end justify-center">
-              <span>
-                {TITLE_LINE2.slice(0, chars2)}
-                {chars2 < TITLE_LINE2.length && line1Done && (
-                  <span className="animate-[blink_0.8s_step-end_infinite] inline-block w-[0.06em] h-[0.85em] bg-[#E8682A] ml-1 align-middle" />
-                )}
+                {/* Shimmer */}
+                <span
+                  className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_ease-in-out_infinite]"
+                  style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)" }}
+                  aria-hidden="true"
+                />
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0 animate-pulse"
+                  style={{ backgroundColor: "#d8610c" }}
+                  aria-hidden="true"
+                />
+                Abril Laranja — Mês de Prevenção contra Maus Tratos
               </span>
+            </motion.div>
+
+            {/* Title with word-by-word stagger reveal */}
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mb-2">
+                {TITLE_WORDS_WHITE.map((word, i) => (
+                  <div key={word + i} className="overflow-hidden">
+                    <motion.span
+                      className="block text-white font-black"
+                      style={{ fontSize: "clamp(48px, 6vw, 72px)", lineHeight: 1.05 }}
+                      initial={{ y: "110%" }}
+                      animate={{ y: "0%" }}
+                      transition={{ duration: 0.65, delay: 0.25 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      {word}
+                    </motion.span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {TITLE_WORDS_ORANGE.map((word, i) => (
+                  <div key={word + i} className="overflow-hidden">
+                    <motion.span
+                      className="block font-black"
+                      style={{ fontSize: "clamp(48px, 6vw, 72px)", lineHeight: 1.05, color: "#d8610c" }}
+                      initial={{ y: "110%" }}
+                      animate={{ y: "0%" }}
+                      transition={{ duration: 0.65, delay: 0.55 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      {word}
+                    </motion.span>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.1 }}
+              className="text-lg font-medium mb-10 max-w-lg"
+              style={{ color: "rgba(255,255,255,0.85)", lineHeight: 1.65 }}
+            >
+              Cada denúncia salva uma vida. Registre maus tratos a animais e conecte com protetores verificados na sua região.
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.3 }}
+              className="flex flex-col sm:flex-row gap-4 mb-12"
+            >
+              {/* Primary — Denunciar with pulse */}
+              <Link
+                href="#denunciar"
+                className="relative flex items-center justify-center gap-2 font-extrabold text-white py-4 px-9 rounded-full text-base cursor-pointer overflow-hidden transition-transform duration-200 hover:scale-[1.03] active:scale-100"
+                style={{ backgroundColor: "#d8610c", boxShadow: "0 8px 32px rgba(216,97,12,0.4)" }}
+              >
+                <span
+                  className="absolute inset-0 rounded-full animate-ping opacity-25"
+                  style={{ backgroundColor: "#d8610c" }}
+                  aria-hidden="true"
+                />
+                <svg className="w-5 h-5 relative z-10 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <span className="relative z-10">Denunciar Agora</span>
+              </Link>
+
+              {/* Secondary — Adotar */}
+              <Link
+                href="#adocao"
+                className="flex items-center justify-center gap-2 font-extrabold text-white py-4 px-9 rounded-full text-base cursor-pointer transition-all duration-200 hover:scale-[1.03] active:scale-100"
+                style={{ border: "2px solid rgba(255,255,255,0.3)" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "#52B788";
+                  e.currentTarget.style.background = "rgba(82,183,136,0.12)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
+                  e.currentTarget.style.background = "transparent";
+                }}
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                Adotar um Animal
+              </Link>
+            </motion.div>
+
+            {/* Trust row */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.7, delay: 1.5 }}
+              className="flex flex-wrap gap-6 text-xs font-bold tracking-widest uppercase"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              {["100% Gratuito", "Anônimo", "Protetores Verificados"].map((label) => (
+                <span key={label} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#d8610c" }} aria-hidden="true" />
+                  {label}
+                </span>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* ── Right: Photos (45%) ── */}
+          <div className="hidden lg:block lg:w-[45%]">
+            <PhotoGrid />
           </div>
         </div>
-
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 1.8 }}
-          className="text-lg sm:text-xl md:text-2xl text-white/60 leading-relaxed max-w-2xl mx-auto mb-12 font-medium"
-        >
-          Cada denúncia salva uma vida.{" "}
-          <span className="text-white/90">Seja a voz de quem não pode falar.</span>
-        </motion.p>
-
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 2.0 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-        >
-          <Link
-            href="#como-funciona"
-            className="group relative w-full sm:w-auto bg-[#E8682A] text-black font-extrabold py-4 px-10 rounded-full text-lg transition-all duration-200 cursor-pointer shadow-lg shadow-[#E8682A]/30 hover:shadow-[#E8682A]/60 hover:shadow-xl hover:scale-[1.03] active:scale-100 overflow-hidden"
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-              </svg>
-              Denunciar agora
-            </span>
-          </Link>
-          <Link
-            href="#adocao"
-            className="w-full sm:w-auto border-2 border-white/30 hover:border-[#52B788] hover:bg-[#52B788]/10 text-white font-extrabold py-4 px-10 rounded-full text-lg transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-100"
-          >
-            Adotar um animal
-          </Link>
-        </motion.div>
-
-        {/* Trust row */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 2.3 }}
-          className="mt-12 flex flex-wrap justify-center gap-8 text-xs text-white/40 font-semibold tracking-widest uppercase"
-        >
-          {["100% Gratuito", "Anônimo", "Protetores Verificados"].map((label) => (
-            <span key={label} className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-[#E8682A]" />
-              {label}
-            </span>
-          ))}
-        </motion.div>
       </div>
 
       {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2.5, duration: 0.6 }}
+        transition={{ delay: 1.8, duration: 0.6 }}
         className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-2"
+        aria-hidden="true"
       >
         <div className="w-6 h-10 border-2 border-white/20 rounded-full flex justify-center pt-2">
           <motion.div
-            animate={{ y: [0, 12, 0] }}
+            animate={{ y: [0, 14, 0] }}
             transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-            className="w-1.5 h-1.5 bg-[#E8682A] rounded-full"
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ backgroundColor: "#d8610c" }}
           />
         </div>
+        <span className="text-white/30 text-xs font-semibold tracking-widest uppercase">Rolar</span>
       </motion.div>
+
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          60%, 100% { transform: translateX(200%); }
+        }
+      `}</style>
     </section>
   );
 }
