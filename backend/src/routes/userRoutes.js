@@ -92,7 +92,7 @@ router.post(
   authorize('admin', 'validator'),
   async (req, res) => {
     try {
-      const { name, email, password, phone, whatsapp, role, city_id, department_id, city_ids, party, councilman_number } = req.body;
+      const { name, email, password, phone, whatsapp, role, city_id, city_name, department_id, city_ids, party, councilman_number } = req.body;
 
       const existing = await User.findOne({ where: { email } });
       if (existing) {
@@ -102,7 +102,7 @@ router.post(
       const user = await User.create({
         name, email, password, phone: phone || whatsapp || '00000000000',
         whatsapp: whatsapp || phone,
-        role, city_id, department_id,
+        role, city_id, city_name, department_id,
         party, councilman_number,
         is_active: true
       });

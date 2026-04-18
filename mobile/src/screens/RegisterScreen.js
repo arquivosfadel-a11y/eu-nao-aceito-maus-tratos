@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform,
   ScrollView, ActivityIndicator, Alert, Image
 } from 'react-native';
-import * as Location from 'expo-location';
+import CityAutocomplete from '../components/CityAutocomplete';
 import api from '../services/api';
 
 const PRIMARY   = '#1B4332';
@@ -52,11 +52,6 @@ export default function RegisterScreen({ navigation }) {
   const [showPass, setShowPass] = useState(false);
   const [cpfError, setCpfError] = useState('');
 
-  // GPS state
-  const [locating, setLocating] = useState(false);
-  const [locationStatus, setLocationStatus] = useState('idle'); // 'idle' | 'detecting' | 'ok' | 'denied' | 'failed'
-  const [manualCity, setManualCity] = useState(false);
-
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -67,56 +62,6 @@ export default function RegisterScreen({ navigation }) {
   });
 
   const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
-
-  // Auto-detect on step 2 mount
-  useEffect(() => {
-    if (step === 2) detectCity();
-  }, [step]);
-
-  const detectCity = async () => {
-    setLocating(true);
-    setLocationStatus('detecting');
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setLocationStatus('denied');
-        setManualCity(true);
-        setLocating(false);
-        return;
-      }
-
-      const loc = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
-      const geocode = await Location.reverseGeocodeAsync({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
-
-      if (geocode && geocode.length > 0) {
-        const place = geocode[0];
-        const city  = place.city || place.subregion || place.region || '';
-        const state = place.region || place.subregion || '';
-
-        // Abbreviate state if long (e.g. "São Paulo" → "SP")
-        const stateAbbrev = STATE_MAP[state] || state;
-        const cityName = city ? `${city}, ${stateAbbrev}` : stateAbbrev;
-
-        setField('city_name', cityName);
-        setLocationStatus('ok');
-      } else {
-        setLocationStatus('failed');
-        setManualCity(true);
-      }
-    } catch (e) {
-      console.log('GPS error:', e);
-      setLocationStatus('failed');
-      setManualCity(true);
-    } finally {
-      setLocating(false);
-    }
-  };
 
   const handleNext = () => {
     if (!form.name.trim() || !form.email.trim() || !form.password.trim()) {
@@ -306,77 +251,14 @@ export default function RegisterScreen({ navigation }) {
                 }
               </View>
 
-              {/* ── GPS City Section ── */}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Sua cidade</Text>
-
-                {/* City display field */}
-                <View style={[
-                  styles.inputWrapper,
-                  locationStatus === 'ok' && styles.inputWrapperGreen,
-                ]}>
-                  <Text style={styles.inputIconTxt}>📍</Text>
-                  {manualCity || locationStatus === 'denied' || locationStatus === 'failed' ? (
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Digite sua cidade (ex: São Paulo, SP)"
-                      placeholderTextColor="#9CA3AF"
-                      value={form.city_name}
-                      onChangeText={v => setField('city_name', v)}
-                    />
-                  ) : (
-                    <Text style={[
-                      styles.cityDisplayText,
-                      !form.city_name && { color: '#9CA3AF' },
-                    ]}>
-                      {locating
-                        ? 'Detectando localização...'
-                        : form.city_name || 'Aguardando GPS...'}
-                    </Text>
-                  )}
-                  {locating && <ActivityIndicator size="small" color={SECONDARY} style={{ marginLeft: 8 }} />}
-                  {locationStatus === 'ok' && !locating && (
-                    <Text style={{ fontSize: 16, marginLeft: 4 }}>✅</Text>
-                  )}
-                </View>
-
-                {/* Status message */}
-                {locationStatus === 'ok' && !locating && (
-                  <Text style={styles.gpsOk}>✅ {form.city_name} detectada com sucesso!</Text>
-                )}
-                {locationStatus === 'denied' && (
-                  <Text style={styles.gpsWarning}>
-                    ⚠️ GPS negado. Digite sua cidade manualmente.
-                  </Text>
-                )}
-                {locationStatus === 'failed' && (
-                  <Text style={styles.gpsWarning}>
-                    ⚠️ Não foi possível detectar. Digite manualmente.
-                  </Text>
-                )}
-
-                {/* Detect button */}
-                <TouchableOpacity
-                  style={[styles.gpsBtn, locating && { opacity: 0.7 }]}
-                  onPress={detectCity}
-                  disabled={locating}
-                  activeOpacity={0.85}
-                >
-                  {locating
-                    ? <ActivityIndicator size="small" color="#fff" />
-                    : <Text style={styles.gpsBtnText}>📍 Detectar minha cidade</Text>
-                  }
-                </TouchableOpacity>
-
-                {/* Toggle manual */}
-                {!manualCity && locationStatus !== 'denied' && (
-                  <TouchableOpacity
-                    style={styles.manualToggle}
-                    onPress={() => setManualCity(true)}
-                  >
-                    <Text style={styles.manualToggleText}>Prefiro digitar manualmente</Text>
-                  </TouchableOpacity>
-                )}
+                <CityAutocomplete
+                  value={form.city_name}
+                  onChange={v => setField('city_name', v)}
+                  placeholder="Digite sua cidade..."
+                />
+                <Text style={styles.hintText}>Ex: São Paulo — SP</Text>
               </View>
 
               <TouchableOpacity
@@ -410,7 +292,6 @@ export default function RegisterScreen({ navigation }) {
   );
 }
 
-// Small helper to avoid repeating inputWrapper boilerplate
 function Field({ label, icon, right, children }) {
   return (
     <View style={styles.inputGroup}>
@@ -423,17 +304,6 @@ function Field({ label, icon, right, children }) {
     </View>
   );
 }
-
-// Partial map of Brazilian state names → abbreviations
-const STATE_MAP = {
-  'Acre': 'AC', 'Alagoas': 'AL', 'Amapá': 'AP', 'Amazonas': 'AM',
-  'Bahia': 'BA', 'Ceará': 'CE', 'Distrito Federal': 'DF', 'Espírito Santo': 'ES',
-  'Goiás': 'GO', 'Maranhão': 'MA', 'Mato Grosso': 'MT', 'Mato Grosso do Sul': 'MS',
-  'Minas Gerais': 'MG', 'Pará': 'PA', 'Paraíba': 'PB', 'Paraná': 'PR',
-  'Pernambuco': 'PE', 'Piauí': 'PI', 'Rio de Janeiro': 'RJ', 'Rio Grande do Norte': 'RN',
-  'Rio Grande do Sul': 'RS', 'Rondônia': 'RO', 'Roraima': 'RR', 'Santa Catarina': 'SC',
-  'São Paulo': 'SP', 'Sergipe': 'SE', 'Tocantins': 'TO',
-};
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
@@ -482,29 +352,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, height: 52,
   },
   inputWrapperError: { borderColor: '#DC2626', backgroundColor: '#FEF2F2' },
-  inputWrapperGreen: { borderColor: SECONDARY, backgroundColor: `${BG}` },
   inputIconTxt: { fontSize: 16, marginRight: 10 },
   input: { flex: 1, fontSize: 15, color: '#111827' },
   eyeIcon: { fontSize: 18, paddingLeft: 8 },
 
-  cityDisplayText: { flex: 1, fontSize: 15, color: '#111827', fontWeight: '600' },
-
   errorText: { fontSize: 12, color: '#DC2626', marginTop: 5, fontWeight: '500' },
   hintText: { fontSize: 11, color: '#9CA3AF', marginTop: 5 },
-
-  /* GPS */
-  gpsOk: { fontSize: 12, color: '#059669', marginTop: 6, fontWeight: '600' },
-  gpsWarning: { fontSize: 12, color: '#D97706', marginTop: 6, fontWeight: '500' },
-  gpsBtn: {
-    backgroundColor: SECONDARY, borderRadius: 12,
-    height: 46, justifyContent: 'center', alignItems: 'center',
-    marginTop: 10,
-    shadowColor: SECONDARY, shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3, shadowRadius: 6, elevation: 4,
-  },
-  gpsBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-  manualToggle: { marginTop: 8, alignSelf: 'center' },
-  manualToggleText: { fontSize: 12, color: '#9CA3AF', textDecorationLine: 'underline' },
 
   /* Buttons */
   btnPrimary: {

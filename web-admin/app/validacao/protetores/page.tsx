@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Heart, Search, Plus, X, MapPin } from 'lucide-react';
 import Sidebar from '@/components/shared/Sidebar';
+import CityAutocomplete from '@/components/ui/CityAutocomplete';
 import api from '@/lib/api';
 
 const PRIMARY   = '#1B4332';
@@ -34,23 +35,17 @@ function StatusDot({ active }: { active: boolean }) {
 
 export default function ProtetoresAdminPage() {
   const [users,      setUsers]      = useState<any[]>([]);
-  const [cities,     setCities]     = useState<any[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [showForm,   setShowForm]   = useState(false);
   const [editing,    setEditing]    = useState<any | null>(null);
   const [search,     setSearch]     = useState('');
   const [filterCity, setFilterCity] = useState('');
   const [form, setForm] = useState({
-    name: '', email: '', password: '', phone: '', whatsapp: '', city_id: '',
+    name: '', email: '', password: '', phone: '', whatsapp: '', city_name: '',
     latitude: '', longitude: '',
   });
 
-  useEffect(() => { fetchCities(); fetchUsers(); }, []);
-
-  const fetchCities = async () => {
-    const res = await api.get('/cities');
-    setCities(res.data.cities || []);
-  };
+  useEffect(() => { fetchUsers(); }, []);
 
   const fetchUsers = async () => {
     try {
@@ -61,7 +56,7 @@ export default function ProtetoresAdminPage() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: '', email: '', password: '', phone: '', whatsapp: '', city_id: '', latitude: '', longitude: '' });
+    setForm({ name: '', email: '', password: '', phone: '', whatsapp: '', city_name: '', latitude: '', longitude: '' });
     setShowForm(true);
   };
 
@@ -69,7 +64,7 @@ export default function ProtetoresAdminPage() {
     setEditing(user);
     setForm({
       name: user.name, email: user.email, password: '', phone: user.phone || '',
-      whatsapp: user.whatsapp || '', city_id: user.city_id || '',
+      whatsapp: user.whatsapp || '', city_name: user.city_name || user.city?.name || '',
       latitude: user.latitude || '', longitude: user.longitude || '',
     });
     setShowForm(true);
@@ -103,18 +98,19 @@ export default function ProtetoresAdminPage() {
 
   const filtered = users.filter(u => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
-    const matchCity   = filterCity ? u.city_id === filterCity : true;
+    const cityName = (u.city_name || u.city?.name || '').toLowerCase();
+    const matchCity = filterCity ? cityName.includes(filterCity.toLowerCase()) : true;
     return matchSearch && matchCity;
   });
 
   const FIELDS = [
-    { label: 'Nome *',                                                         key: 'name',      type: 'text',     placeholder: 'Nome completo', col: 1 },
-    { label: 'Email *',                                                        key: 'email',     type: 'email',    placeholder: 'protetor@causaanimal.com.br', col: 1 },
-    { label: editing ? 'Nova Senha (deixe em branco para manter)' : 'Senha *', key: 'password',  type: 'password', placeholder: '••••••••', col: 1 },
-    { label: 'Telefone',                                                        key: 'phone',     type: 'text',     placeholder: '(11) 99999-9999', col: 1 },
-    { label: 'WhatsApp',                                                        key: 'whatsapp',  type: 'text',     placeholder: '11999999999', col: 1 },
-    { label: 'Latitude (opcional)',                                             key: 'latitude',  type: 'text',     placeholder: '-23.5505', col: 1 },
-    { label: 'Longitude (opcional)',                                            key: 'longitude', type: 'text',     placeholder: '-46.6333', col: 1 },
+    { label: 'Nome *',                                                         key: 'name',      type: 'text',     placeholder: 'Nome completo' },
+    { label: 'Email *',                                                        key: 'email',     type: 'email',    placeholder: 'protetor@causaanimal.com.br' },
+    { label: editing ? 'Nova Senha (deixe em branco para manter)' : 'Senha *', key: 'password',  type: 'password', placeholder: '••••••••' },
+    { label: 'Telefone',                                                        key: 'phone',     type: 'text',     placeholder: '(11) 99999-9999' },
+    { label: 'WhatsApp',                                                        key: 'whatsapp',  type: 'text',     placeholder: '11999999999' },
+    { label: 'Latitude (opcional)',                                             key: 'latitude',  type: 'text',     placeholder: '-23.5505' },
+    { label: 'Longitude (opcional)',                                            key: 'longitude', type: 'text',     placeholder: '-46.6333' },
   ];
 
   return (
@@ -149,11 +145,13 @@ export default function ProtetoresAdminPage() {
             <Search size={16} style={{ color: '#9CA3AF', flexShrink: 0 }} />
             <input type="text" placeholder="Buscar por nome ou email..." value={search} onChange={e => setSearch(e.target.value)}
               className="flex-1 text-sm bg-transparent focus:outline-none placeholder:text-gray-400 text-gray-800" />
-            <select value={filterCity} onChange={e => setFilterCity(e.target.value)}
-              style={{ border: `1.5px solid #D1FAE5`, borderRadius: 10, padding: '8px 12px', fontSize: 13, color: '#374151', background: '#fff', outline: 'none', cursor: 'pointer', flexShrink: 0 }}>
-              <option value="">Todas as cidades</option>
-              {cities.map(c => <option key={c.id} value={c.id}>{c.name} — {c.state}</option>)}
-            </select>
+            <input
+              type="text"
+              placeholder="Filtrar por cidade..."
+              value={filterCity}
+              onChange={e => setFilterCity(e.target.value)}
+              style={{ border: `1.5px solid #D1FAE5`, borderRadius: 10, padding: '8px 12px', fontSize: 13, color: '#374151', background: '#fff', outline: 'none', flexShrink: 0, width: 180 }}
+            />
           </div>
 
           {showForm && (
@@ -183,10 +181,12 @@ export default function ProtetoresAdminPage() {
                   ))}
                   <div>
                     <label style={LABEL}>Cidade *</label>
-                    <select value={form.city_id} onChange={e => setForm({ ...form, city_id: e.target.value })} className={INPUT} required>
-                      <option value="">Selecione a cidade...</option>
-                      {cities.map(c => <option key={c.id} value={c.id}>{c.name} — {c.state}</option>)}
-                    </select>
+                    <CityAutocomplete
+                      value={form.city_name}
+                      onChange={v => setForm({ ...form, city_name: v })}
+                      className={INPUT}
+                      required
+                    />
                   </div>
                 </div>
 
@@ -254,7 +254,7 @@ export default function ProtetoresAdminPage() {
                       <p style={{ fontSize: 13, color: '#6B7280' }}>{user.phone || '—'}</p>
                       {user.whatsapp && <p style={{ fontSize: 11, color: '#9CA3AF' }}>WA: {user.whatsapp}</p>}
                     </td>
-                    <td className="px-6 py-4"><p style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{user.city?.name || '—'}</p></td>
+                    <td className="px-6 py-4"><p style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{user.city_name || user.city?.name || '—'}</p></td>
                     <td className="px-6 py-4">
                       {user.latitude && user.longitude
                         ? <span className="flex items-center gap-1" style={{ fontSize: 12, color: '#059669' }}>
