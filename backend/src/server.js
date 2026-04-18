@@ -26,8 +26,19 @@ const io = socketIo(server, {
 
 // Middlewares
 app.use(helmet());
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (ex: curl, mobile, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`Origem não permitida pelo CORS: ${origin}`));
+  },
   credentials: true
 }));
 app.use(express.json());
