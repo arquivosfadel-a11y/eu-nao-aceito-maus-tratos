@@ -13,15 +13,19 @@ const Message = sequelize.define('Message', {
   },
   sender_id: {
     type: DataTypes.UUID,
-    allowNull: false
+    allowNull: true  // null para mensagens de sistema
   },
   sender_role: {
-    type: DataTypes.ENUM('citizen', 'secretary'),
-    allowNull: false
+    type: DataTypes.ENUM('citizen', 'secretary', 'protector', 'validator', 'admin', 'system'),
+    allowNull: true
   },
   content: {
     type: DataTypes.TEXT,
     allowNull: false
+  },
+  is_system: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   },
   is_read: {
     type: DataTypes.BOOLEAN,

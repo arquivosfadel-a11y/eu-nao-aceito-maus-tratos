@@ -47,6 +47,12 @@ const runMigrations = async () => {
   const migrations = [
     `ALTER TABLE IF EXISTS complaints ALTER COLUMN city_id DROP NOT NULL`,
     `ALTER TABLE IF EXISTS complaints ALTER COLUMN department_id DROP NOT NULL`,
+    `ALTER TABLE IF EXISTS messages ALTER COLUMN sender_id DROP NOT NULL`,
+    `ALTER TABLE IF EXISTS messages ALTER COLUMN sender_role DROP NOT NULL`,
+    `ALTER TYPE "enum_messages_sender_role" ADD VALUE IF NOT EXISTS 'protector'`,
+    `ALTER TYPE "enum_messages_sender_role" ADD VALUE IF NOT EXISTS 'validator'`,
+    `ALTER TYPE "enum_messages_sender_role" ADD VALUE IF NOT EXISTS 'admin'`,
+    `ALTER TYPE "enum_messages_sender_role" ADD VALUE IF NOT EXISTS 'system'`,
   ];
   for (const sql of migrations) {
     try {
