@@ -40,10 +40,22 @@ const sendPushNotification = async (pushToken, title, body, data = {}) => {
 
 const createComplaint = async (req, res) => {
   try {
-    const { title, description, category, latitude, longitude, address, neighborhood, city_id } = req.body;
+    const {
+      title, description,
+      category, animal_category, abuse_type,
+      latitude, longitude, address, neighborhood,
+      city_id, city_name
+    } = req.body;
 
-    // city_id é opcional — vem do body (GPS da denúncia) ou do cadastro do usuário como fallback
-    const city_id_final = city_id || req.user.city_id || null;
+    // city_id é opcional — vem do body ou do cadastro do usuário como fallback
+    let city_id_final = city_id || req.user.city_id || null;
+
+    // Se não tem city_id, tenta buscar pelo nome
+    if (!city_id_final && city_name) {
+      const { Op } = require('sequelize');
+      const city = await City.findOne({ where: { name: { [Op.iLike]: `%${city_name}%` } } });
+      if (city) city_id_final = city.id;
+    }
 
     let images = [];
     if (req.files && req.files.length > 0) {
@@ -53,8 +65,11 @@ const createComplaint = async (req, res) => {
 
     const complaint = await Complaint.create({
       title, description,
-      category: category || 'Geral',
+      category: category || animal_category || 'Geral',
+      animal_category: animal_category || null,
+      abuse_type: abuse_type || null,
       city_id: city_id_final,
+      city_name: city_name || null,
       citizen_id: req.user.id,
       latitude, longitude, address, neighborhood,
       images,
@@ -69,7 +84,7 @@ const createComplaint = async (req, res) => {
     });
   } catch (error) {
     console.error('Erro ao criar denúncia:', error);
-    return res.status(500).json({ success: false, message: 'Erro interno do servidor', debug: error.message });
+    return res.status(500).json({ success: false, message: 'Erro interno do servidor' });
   }
 };
 

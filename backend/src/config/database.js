@@ -42,12 +42,29 @@ if (process.env.DATABASE_URL) {
   );
 }
 
+const runMigrations = async () => {
+  // Remove constraints NOT NULL herdadas do Participa Cidade que não se aplicam ao causaanimal
+  const migrations = [
+    `ALTER TABLE IF EXISTS complaints ALTER COLUMN city_id DROP NOT NULL`,
+    `ALTER TABLE IF EXISTS complaints ALTER COLUMN department_id DROP NOT NULL`,
+  ];
+  for (const sql of migrations) {
+    try {
+      await sequelize.query(sql);
+    } catch (e) {
+      // Ignora se a coluna não existe ou constraint já foi removida
+    }
+  }
+  console.log('✅ Migrations de compatibilidade aplicadas!');
+};
+
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ Banco de dados conectado com sucesso!');
     await sequelize.sync({ alter: true });
     console.log('✅ Tabelas sincronizadas!');
+    await runMigrations();
   } catch (error) {
     console.error('❌ Erro ao conectar banco de dados:', error);
     process.exit(1);

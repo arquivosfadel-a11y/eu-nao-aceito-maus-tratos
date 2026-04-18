@@ -21,7 +21,19 @@ const Complaint = sequelize.define('Complaint', {
   },
   category: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
+  },
+  animal_category: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  abuse_type: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  city_name: {
+    type: DataTypes.STRING,
+    allowNull: true
   },
   status: {
     type: DataTypes.ENUM(
@@ -41,7 +53,8 @@ const Complaint = sequelize.define('Complaint', {
   },
   city_id: {
     type: DataTypes.UUID,
-    allowNull: true
+    allowNull: true,
+    references: null
   },
   department_id: {
     type: DataTypes.UUID,
