@@ -7,16 +7,44 @@ interface IbgeMunicipio {
   microrregiao: { mesorregiao: { UF: { sigla: string } } };
 }
 
+// Fallback usado se a API do IBGE falhar
+const FALLBACK_CITIES = [
+  'São Paulo — SP', 'Rio de Janeiro — RJ', 'Brasília — DF', 'Salvador — BA',
+  'Fortaleza — CE', 'Belo Horizonte — MG', 'Manaus — AM', 'Curitiba — PR',
+  'Recife — PE', 'Goiânia — GO', 'Belém — PA', 'Porto Alegre — RS',
+  'São Luís — MA', 'Maceió — AL', 'Natal — RN', 'Teresina — PI',
+  'Campo Grande — MS', 'João Pessoa — PB', 'Aracaju — SE', 'Cuiabá — MT',
+  'Macapá — AP', 'Porto Velho — RO', 'Boa Vista — RR', 'Florianópolis — SC',
+  'Palmas — TO', 'Rio Branco — AC', 'Vitória — ES', 'Barretos — SP',
+  'Campinas — SP', 'Santos — SP', 'Ribeirão Preto — SP', 'São José dos Campos — SP',
+  'Sorocaba — SP', 'Osasco — SP', 'Guarulhos — SP', 'Londrina — PR',
+  'Maringá — PR', 'Joinville — SC', 'Uberlândia — MG', 'Contagem — MG',
+];
+
 let ibgeCache: string[] | null = null;
 let loadingPromise: Promise<void> | null = null;
+
+function fetchWithTimeout(url: string, ms: number): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+}
 
 function loadIbge(): Promise<void> {
   if (ibgeCache) return Promise.resolve();
   if (loadingPromise) return loadingPromise;
-  loadingPromise = fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome')
+  loadingPromise = fetchWithTimeout(
+    'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome',
+    5000
+  )
     .then(r => r.json())
     .then((data: IbgeMunicipio[]) => {
       ibgeCache = data.map(m => `${m.nome} — ${m.microrregiao.mesorregiao.UF.sigla}`);
+    })
+    .catch(() => {
+      // API falhou: usa fallback e libera o campo para texto livre
+      ibgeCache = FALLBACK_CITIES;
+      loadingPromise = null; // permite nova tentativa futura
     });
   return loadingPromise;
 }
@@ -36,25 +64,27 @@ export default function CityAutocomplete({ value, onChange, className, required 
   const [query, setQuery] = useState(value);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
-  const [ibgeLoaded, setIbgeLoaded] = useState(!!ibgeCache);
-  const [ibgeLoading, setIbgeLoading] = useState(false);
+  const [ibgeLoading, setIbgeLoading] = useState(!ibgeCache);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setQuery(value); }, [value]);
+  // Sincroniza valor externo apenas quando vazio (reset de form)
+  useEffect(() => {
+    if (!value) setQuery('');
+  }, [value]);
 
   useEffect(() => {
-    if (ibgeCache) return;
+    if (ibgeCache) { setIbgeLoading(false); return; }
     setIbgeLoading(true);
-    loadIbge().then(() => { setIbgeLoaded(true); setIbgeLoading(false); });
+    loadIbge().then(() => setIbgeLoading(false));
   }, []);
 
   useEffect(() => {
-    if (!ibgeLoaded || query.length < 3) { setSuggestions([]); setOpen(false); return; }
+    if (!ibgeCache || query.length < 2) { setSuggestions([]); setOpen(false); return; }
     const q = normalize(query);
-    const matches = ibgeCache!.filter(c => normalize(c).includes(q)).slice(0, 8);
+    const matches = ibgeCache.filter(c => normalize(c).includes(q)).slice(0, 8);
     setSuggestions(matches);
     setOpen(matches.length > 0);
-  }, [query, ibgeLoaded]);
+  }, [query]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -74,10 +104,9 @@ export default function CityAutocomplete({ value, onChange, className, required 
           value={query}
           onChange={e => { setQuery(e.target.value); onChange(e.target.value); }}
           onKeyDown={e => { if (e.key === 'Escape') setOpen(false); }}
-          placeholder={ibgeLoading ? 'Carregando cidades...' : 'Digite o nome da cidade...'}
+          placeholder="Digite o nome da cidade..."
           className={className}
           required={required}
-          disabled={ibgeLoading}
           autoComplete="off"
         />
         {ibgeLoading && (
@@ -86,6 +115,7 @@ export default function CityAutocomplete({ value, onChange, className, required 
             width: 14, height: 14, borderRadius: '50%',
             border: '2px solid #D1FAE5', borderTopColor: '#1B4332',
             display: 'inline-block', animation: 'spin 0.85s linear infinite',
+            pointerEvents: 'none',
           }} />
         )}
       </div>
