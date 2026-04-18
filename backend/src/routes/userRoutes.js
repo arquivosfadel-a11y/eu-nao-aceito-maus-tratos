@@ -1,8 +1,53 @@
 const express = require('express');
 const router = express.Router();
-const { User, City, Department, ValidatorCity } = require('../models');
+const { User, City, Department, ValidatorCity, Complaint } = require('../models');
+const { sequelize } = require('../config/database');
 const { authenticate, authorize } = require('../middlewares/auth');
 const { Op } = require('sequelize');
+
+// GET /api/users/protectors — todos os protetores com disponibilidade
+router.get(
+  '/protectors',
+  authenticate,
+  authorize('admin', 'validator'),
+  async (req, res) => {
+    try {
+      const protectors = await User.findAll({
+        where: { role: 'protector', is_active: true },
+        attributes: ['id', 'name', 'email', 'phone', 'whatsapp', 'city_id', 'city_name', 'avatar_url'],
+        include: [{ association: 'city', attributes: ['id', 'name', 'state'] }],
+        order: [['name', 'ASC']]
+      });
+
+      // Conta denúncias em andamento por protetor
+      const counts = await Complaint.findAll({
+        where: { secretary_id: protectors.map(p => p.id), status: 'in_progress' },
+        attributes: ['secretary_id', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+        group: ['secretary_id'],
+        raw: true
+      });
+
+      const countMap = {};
+      counts.forEach(c => { countMap[c.secretary_id] = parseInt(c.count); });
+
+      const result = protectors
+        .map(p => ({
+          ...p.toJSON(),
+          city_name: p.city_name || p.city?.name || null,
+          in_progress_count: countMap[p.id] || 0
+        }))
+        .sort((a, b) => {
+          if (a.in_progress_count !== b.in_progress_count) return a.in_progress_count - b.in_progress_count;
+          return a.name.localeCompare(b.name, 'pt-BR');
+        });
+
+      return res.status(200).json({ success: true, protectors: result });
+    } catch (error) {
+      console.error('Erro ao listar protetores:', error);
+      return res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+    }
+  }
+);
 
 // Listar usuários — com filtro opcional por role
 router.get(

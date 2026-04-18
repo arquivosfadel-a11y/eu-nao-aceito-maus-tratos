@@ -39,6 +39,8 @@ export interface Protector {
   latitude?: number;
   longitude?: number;
   distance_km?: number;
+  in_progress_count?: number;
+  city?: { id: string; name: string; state: string };
 }
 
 export interface Animal {
@@ -68,6 +70,9 @@ export interface Complaint {
   title: string;
   description: string;
   category: string;
+  animal_category?: string;
+  abuse_type?: string;
+  city_name?: string;
   status: 'pending' | 'validated' | 'in_progress' | 'resolved' | 'rejected' | 'not_resolved' | 'closed';
   citizen_id: string;
   city_id: string;

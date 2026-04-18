@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   ClipboardCheck, Clock, CheckCircle2, XCircle, MapPin, User,
-  Camera, ChevronRight, X, Heart, Shield,
+  Camera, ChevronRight, X, Heart, Shield, Search,
 } from 'lucide-react';
 import Sidebar from '@/components/shared/Sidebar';
 import api from '@/lib/api';
@@ -50,6 +50,7 @@ export default function ValidacaoPage() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectForm,  setShowRejectForm]  = useState(false);
   const [processing,      setProcessing]      = useState(false);
+  const [protectorSearch, setProtectorSearch] = useState('');
 
   useEffect(() => { loadCities(); }, []);
   useEffect(() => { fetchComplaints(); }, [filterCity]);
@@ -95,10 +96,10 @@ export default function ValidacaoPage() {
     } catch {}
   };
 
-  const fetchProtectors = async (city_id: string) => {
+  const fetchProtectors = async () => {
     try {
-      const res = await api.get('/users', { params: { role: 'protector', city_id } });
-      setProtectors(res.data.users || []);
+      const res = await api.get('/users/protectors');
+      setProtectors(res.data.protectors || []);
     } catch {
       setProtectors([]);
     }
@@ -112,7 +113,8 @@ export default function ValidacaoPage() {
     setEditDescription(complaint.description || '');
     setRejectionReason('');
     setShowRejectForm(false);
-    if (complaint.city_id) fetchProtectors(complaint.city_id);
+    setProtectorSearch('');
+    fetchProtectors();
   };
 
   const handleApprove = async () => {
@@ -363,15 +365,45 @@ export default function ValidacaoPage() {
                       <p style={{ fontSize: 11, color: '#9CA3AF' }}>{(selected as any).citizen?.phone || ''}</p>
                     </div>
                     <div style={{ backgroundColor: BG, borderRadius: 10, padding: '10px 14px' }}>
-                      <p style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Cidade</p>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{selected.city?.name} — {selected.city?.state}</p>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Animal / Ocorrência</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                        {(selected as any).animal_category || selected.category || '—'}
+                      </p>
+                      {(selected as any).abuse_type && (
+                        <p style={{ fontSize: 11, color: '#9CA3AF' }}>{(selected as any).abuse_type}</p>
+                      )}
                     </div>
-                    {selected.address && (
-                      <div className="col-span-2" style={{ backgroundColor: BG, borderRadius: 10, padding: '10px 14px' }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Endereço</p>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{selected.address}</p>
-                      </div>
-                    )}
+                    <div className="col-span-2" style={{ backgroundColor: BG, borderRadius: 10, padding: '10px 14px' }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+                        Localização da Denúncia
+                      </p>
+                      {selected.address ? (
+                        <>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                            {selected.address}{selected.neighborhood ? `, ${selected.neighborhood}` : ''}
+                          </p>
+                          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
+                            {selected.city?.name || (selected as any).city_name || '—'}
+                            {selected.city?.state ? ` — ${selected.city.state}` : ''}
+                          </p>
+                        </>
+                      ) : selected.latitude ? (
+                        <>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                            {selected.city?.name || (selected as any).city_name || 'Sem endereço'}
+                            {selected.city?.state ? ` — ${selected.city.state}` : ''}
+                          </p>
+                          <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>
+                            {selected.latitude?.toFixed(6)}, {selected.longitude?.toFixed(6)}
+                          </p>
+                        </>
+                      ) : (
+                        <p style={{ fontSize: 13, color: '#9CA3AF' }}>
+                          {selected.city?.name || (selected as any).city_name || 'Localização não informada'}
+                          {selected.city?.state ? ` — ${selected.city.state}` : ''}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Título editável */}
@@ -396,45 +428,70 @@ export default function ValidacaoPage() {
                     <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
                       Encaminhar para Protetor
                     </label>
-                    {protectors.length > 0 ? (
-                      <div className="space-y-2">
-                        {protectors.map(p => (
-                          <label
-                            key={p.id}
-                            className="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors"
-                            style={{
-                              border: `1.5px solid ${selectedProtector === p.id ? SECONDARY : '#E5E7EB'}`,
-                              backgroundColor: selectedProtector === p.id ? '#ECFDF5' : '#fff',
-                            }}
-                          >
-                            <input
-                              type="radio" name="protector" value={p.id}
-                              checked={selectedProtector === p.id}
-                              onChange={() => setSelectedProtector(p.id)}
-                              className="accent-green-600"
-                            />
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                              style={{ backgroundColor: `${PRIMARY}20`, color: PRIMARY }}>
-                              {p.name.split(' ').map(w => w[0]).slice(0, 2).join('')}
-                            </div>
-                            <div className="min-w-0">
-                              <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{p.name}</p>
-                              {p.city_name && <p style={{ fontSize: 11, color: '#9CA3AF' }}>{p.city_name}</p>}
-                              {p.distance_km !== undefined && (
-                                <p style={{ fontSize: 11, color: SECONDARY, fontWeight: 600 }}>
-                                  {p.distance_km < 1 ? '< 1 km' : `${p.distance_km.toFixed(1)} km`}
+                    {protectors.length > 0 && (
+                      <input
+                        type="text"
+                        value={protectorSearch}
+                        onChange={e => setProtectorSearch(e.target.value)}
+                        placeholder="Buscar por nome ou cidade..."
+                        className={INPUT}
+                        style={{ marginBottom: 8 }}
+                      />
+                    )}
+                    {protectors.length > 0 ? (() => {
+                      const q = protectorSearch.toLowerCase();
+                      const filtered = protectors.filter(p =>
+                        p.name.toLowerCase().includes(q) ||
+                        (p.city_name || '').toLowerCase().includes(q)
+                      );
+                      return filtered.length > 0 ? (
+                        <div className="space-y-2" style={{ maxHeight: 260, overflowY: 'auto' }}>
+                          {filtered.map(p => (
+                            <label
+                              key={p.id}
+                              className="flex items-center gap-3 p-3 rounded-xl cursor-pointer"
+                              style={{
+                                border: `1.5px solid ${selectedProtector === p.id ? SECONDARY : '#E5E7EB'}`,
+                                backgroundColor: selectedProtector === p.id ? '#ECFDF5' : '#fff',
+                              }}
+                            >
+                              <input
+                                type="radio" name="protector" value={p.id}
+                                checked={selectedProtector === p.id}
+                                onChange={() => setSelectedProtector(p.id)}
+                                className="accent-green-600"
+                              />
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                                style={{ backgroundColor: `${PRIMARY}20`, color: PRIMARY }}>
+                                {p.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('')}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{p.name}</p>
+                                <p style={{ fontSize: 11, color: '#9CA3AF' }}>
+                                  {p.city_name || p.city?.name || 'Cidade não informada'}
+                                  {p.phone ? ` · ${p.phone}` : ''}
                                 </p>
-                              )}
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
+                              </div>
+                              <div style={{
+                                fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 99,
+                                backgroundColor: (p.in_progress_count || 0) === 0 ? '#ECFDF5' : (p.in_progress_count || 0) <= 2 ? '#FFFBEB' : '#FEF2F2',
+                                color: (p.in_progress_count || 0) === 0 ? PRIMARY : (p.in_progress_count || 0) <= 2 ? '#D97706' : '#DC2626',
+                                flexShrink: 0,
+                              }}>
+                                {(p.in_progress_count || 0) === 0 ? 'Livre' : `${p.in_progress_count} em andamento`}
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ backgroundColor: BG, borderRadius: 10, padding: '12px 14px' }}>
+                          <p style={{ fontSize: 13, color: '#9CA3AF' }}>Nenhum protetor encontrado para "{protectorSearch}"</p>
+                        </div>
+                      );
+                    })() : (
                       <div style={{ backgroundColor: BG, borderRadius: 10, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
                         <Heart size={16} style={{ color: SECONDARY }} strokeWidth={2} />
-                        <p style={{ fontSize: 13, color: '#6B7280' }}>
-                          {selected.city_id ? 'Nenhum protetor cadastrado nessa cidade' : 'Selecione a cidade primeiro'}
-                        </p>
+                        <p style={{ fontSize: 13, color: '#6B7280' }}>Nenhum protetor cadastrado</p>
                       </div>
                     )}
                   </div>
