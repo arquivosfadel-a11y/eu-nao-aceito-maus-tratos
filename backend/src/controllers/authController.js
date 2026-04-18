@@ -90,7 +90,7 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.error('Erro no registro:', error);
-    return res.status(500).json({ success: false, message: 'Erro interno do servidor', debug: error.message });
+    return res.status(500).json({ success: false, message: 'Erro interno do servidor' });
   }
 };
 
