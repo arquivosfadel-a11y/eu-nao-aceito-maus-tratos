@@ -69,7 +69,7 @@ const createComplaint = async (req, res) => {
     });
   } catch (error) {
     console.error('Erro ao criar denúncia:', error);
-    return res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+    return res.status(500).json({ success: false, message: 'Erro interno do servidor', debug: error.message });
   }
 };
 
