@@ -112,7 +112,13 @@ export default function LoginPage() {
         window.location.href = getRedirectByRole(response.user.role);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Email ou senha incorretos');
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (!err.response) {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão.');
+      } else {
+        setError('Email ou senha incorretos');
+      }
     } finally {
       setLoading(false);
     }

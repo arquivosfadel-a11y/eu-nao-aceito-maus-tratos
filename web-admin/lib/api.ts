@@ -18,12 +18,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Redireciona para login se token expirar
+// Redireciona para login se token expirar (não redireciona se já estiver na página de login)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
         localStorage.removeItem('participa_token');
         localStorage.removeItem('participa_user');
         window.location.href = '/login';
