@@ -225,7 +225,7 @@ export default function ProtetoresAdminPage() {
             </div>
           )}
 
-          <div className="bg-white overflow-hidden" style={{ borderRadius: 16, boxShadow: SHADOW }}>
+          <div className="bg-white" style={{ borderRadius: 16, boxShadow: SHADOW, overflow: 'hidden' }}>
             <div className="px-6 py-4 flex items-center gap-3" style={{ borderBottom: `1px solid ${BG}` }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: `${SECONDARY}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Heart size={16} style={{ color: PRIMARY }} />
@@ -236,7 +236,8 @@ export default function ProtetoresAdminPage() {
               </div>
             </div>
 
-            <table className="w-full">
+            <div style={{ overflowX: 'auto' }}>
+            <table className="w-full" style={{ minWidth: 860 }}>
               <thead>
                 <tr style={{ backgroundColor: BG }}>
                   {['Nome', 'Email', 'Telefone / WhatsApp', 'Cidade', 'Coordenadas', 'Cadastro', 'Status', 'Ações'].map(h => (
@@ -312,6 +313,7 @@ export default function ProtetoresAdminPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       </main>

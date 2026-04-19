@@ -21,7 +21,6 @@ const menuByRole: Record<string, MenuItem[]> = {
   ],
   admin: [
     { label: 'Validação',    path: '/validacao',             Icon: ShieldCheck },
-    { label: 'Cidades',      path: '/validacao/cidades',     Icon: Globe },
     { label: 'Protetores',   path: '/validacao/protetores',  Icon: Heart },
     { label: 'Cidadãos',     path: '/validacao/cidadaos',    Icon: Users },
     { label: 'Validadores',  path: '/validacao/validadores', Icon: UserCog },
