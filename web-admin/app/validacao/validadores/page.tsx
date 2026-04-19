@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Search, Plus, X, Check } from 'lucide-react';
+import { ShieldCheck, Search, Plus, X, Check, Pencil, Trash2 } from 'lucide-react';
 import Sidebar from '@/components/shared/Sidebar';
+import EditUserModal from '@/components/ui/EditUserModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import api from '@/lib/api';
 
 const PRIMARY   = '#1B4332';
@@ -40,6 +42,9 @@ export default function ValidadoresPage() {
   const [editing,         setEditing]         = useState<any | null>(null);
   const [search,          setSearch]          = useState('');
   const [selectedCityIds, setSelectedCityIds] = useState<string[]>([]);
+  const [editTarget,      setEditTarget]      = useState<any | null>(null);
+  const [deleteTarget,    setDeleteTarget]    = useState<any | null>(null);
+  const [deleting,        setDeleting]        = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', whatsapp: '' });
 
   useEffect(() => { fetchUsers(); fetchCities(); }, []);
@@ -95,6 +100,20 @@ export default function ValidadoresPage() {
   const handleToggle = async (id: string, is_active: boolean) => {
     await api.put(`/users/${id}`, { is_active: !is_active });
     fetchUsers();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/users/${deleteTarget.id}`);
+      setDeleteTarget(null);
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Erro ao remover validador.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const filtered = users.filter(u =>
@@ -278,15 +297,26 @@ export default function ValidadoresPage() {
                     <td className="px-6 py-4"><StatusDot active={user.is_active} /></td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <button onClick={() => openEdit(user)}
-                          style={{ fontSize: 12, fontWeight: 600, backgroundColor: `${SECONDARY}20`, color: PRIMARY, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
+                        <button onClick={() => setEditTarget(user)}
+                          title="Editar"
+                          style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, backgroundColor: `${SECONDARY}20`, color: PRIMARY, padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
                           onMouseEnter={e => (e.currentTarget.style.backgroundColor = `${SECONDARY}35`)}
-                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = `${SECONDARY}20`)}>Editar</button>
+                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = `${SECONDARY}20`)}>
+                          <Pencil size={13} strokeWidth={2} /> Editar
+                        </button>
                         <button onClick={() => handleToggle(user.id, user.is_active)}
-                          style={{ fontSize: 12, fontWeight: 600, backgroundColor: user.is_active ? '#FEF2F2' : '#ECFDF5', color: user.is_active ? '#DC2626' : '#059669', padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
+                          style={{ fontSize: 12, fontWeight: 600, backgroundColor: user.is_active ? '#FEF2F2' : '#ECFDF5', color: user.is_active ? '#DC2626' : '#059669', padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
                           onMouseEnter={e => (e.currentTarget.style.backgroundColor = user.is_active ? '#FECACA' : '#A7F3D0')}
                           onMouseLeave={e => (e.currentTarget.style.backgroundColor = user.is_active ? '#FEF2F2' : '#ECFDF5')}>
                           {user.is_active ? 'Desativar' : 'Ativar'}
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(user)}
+                          title="Remover"
+                          style={{ display: 'flex', alignItems: 'center', padding: '5px 8px', borderRadius: 8, border: 'none', cursor: 'pointer', backgroundColor: '#FEF2F2', color: '#DC2626' }}
+                          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FECACA')}
+                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FEF2F2')}>
+                          <Trash2 size={13} strokeWidth={2} />
                         </button>
                       </div>
                     </td>
@@ -297,6 +327,21 @@ export default function ValidadoresPage() {
           </div>
         </div>
       </main>
+      {editTarget && (
+        <EditUserModal user={editTarget} onClose={() => setEditTarget(null)} onSaved={fetchUsers} />
+      )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          title="Remover validador"
+          message={`Tem certeza que deseja remover "${deleteTarget.name}"? Esta ação não pode ser desfeita.`}
+          confirmLabel="Remover"
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+          loading={deleting}
+        />
+      )}
+
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

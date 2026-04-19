@@ -49,16 +49,21 @@ router.get(
   }
 );
 
-// Listar usuários — com filtro opcional por role
+// Listar usuários — com filtro opcional por role e city_name (LIKE)
 router.get(
   '/',
   authenticate,
   authorize('admin', 'validator'),
   async (req, res) => {
     try {
-      const { role } = req.query;
+      const { role, city_name } = req.query;
       const where = {};
       if (role) where.role = role;
+      if (city_name) {
+        where[Op.or] = [
+          { city_name: { [Op.iLike]: `%${city_name}%` } },
+        ];
+      }
 
       const users = await User.findAll({
         where,
@@ -164,6 +169,45 @@ router.put(
       return res.status(200).json({ success: true, message: 'Usuário atualizado!' });
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
+      return res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+    }
+  }
+);
+
+// Deletar usuário — apenas admin
+router.delete(
+  '/:id',
+  authenticate,
+  authorize('admin'),
+  async (req, res) => {
+    try {
+      const user = await User.findByPk(req.params.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+      }
+
+      // Bloqueia exclusão se houver denúncias ativas
+      const activeCount = await Complaint.count({
+        where: {
+          [Op.or]: [
+            { citizen_id: user.id },
+            { secretary_id: user.id },
+          ],
+          status: { [Op.in]: ['pending', 'validated', 'in_progress'] },
+        },
+      });
+
+      if (activeCount > 0) {
+        return res.status(409).json({
+          success: false,
+          message: `Não é possível remover: usuário possui ${activeCount} denúncia(s) ativa(s).`,
+        });
+      }
+
+      await user.destroy();
+      return res.status(200).json({ success: true, message: 'Usuário removido com sucesso.' });
+    } catch (error) {
+      console.error('Erro ao deletar usuário:', error);
       return res.status(500).json({ success: false, message: 'Erro interno do servidor' });
     }
   }

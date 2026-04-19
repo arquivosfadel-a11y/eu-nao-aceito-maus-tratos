@@ -36,7 +36,6 @@ export default function ValidacaoPage() {
   const { user } = getSession();
   const isAdmin = user?.role === 'admin';
 
-  const [availableCities, setAvailableCities] = useState<any[]>([]);
   const [filterCity,      setFilterCity]      = useState('');
   const [complaints,      setComplaints]      = useState<Complaint[]>([]);
   const [stats,           setStats]           = useState({ pending: 0, approved: 0, rejected: 0 });
@@ -52,20 +51,9 @@ export default function ValidacaoPage() {
   const [processing,      setProcessing]      = useState(false);
   const [protectorSearch, setProtectorSearch] = useState('');
 
-  useEffect(() => { loadCities(); }, []);
-  useEffect(() => { fetchComplaints(); }, [filterCity]);
-
-  const loadCities = async () => {
-    if (isAdmin) {
-      const res = await api.get('/cities');
-      setAvailableCities(res.data.cities || []);
-    } else {
-      setAvailableCities(user?.validatorCities || []);
-    }
-  };
+  useEffect(() => { fetchComplaints(); }, []);
 
   const getCityIds = (): string[] => {
-    if (filterCity) return [filterCity];
     if (!isAdmin && user?.validatorCities?.length) return user.validatorCities.map((c: any) => c.id);
     return [];
   };
@@ -185,20 +173,17 @@ export default function ValidacaoPage() {
             </div>
           </div>
 
-          <select
+          <input
+            type="text"
             value={filterCity}
             onChange={e => { setFilterCity(e.target.value); setSelected(null); }}
+            placeholder="Filtrar por cidade..."
             style={{
               border: `1.5px solid #D1FAE5`, borderRadius: 10, padding: '8px 14px',
               fontSize: 13, color: '#374151', background: '#fff',
-              minWidth: 200, outline: 'none', cursor: 'pointer', fontFamily: FONT,
+              minWidth: 200, outline: 'none', fontFamily: FONT,
             }}
-          >
-            <option value="">Todas as cidades</option>
-            {availableCities.map((c: any) => (
-              <option key={c.id} value={c.id}>{c.name} — {c.state}</option>
-            ))}
-          </select>
+          />
         </header>
 
         <div className="flex-1 overflow-y-auto p-8 space-y-6">
@@ -256,7 +241,9 @@ export default function ValidacaoPage() {
                   <p style={{ fontSize: 15, fontWeight: 600, color: '#374151' }}>Nenhuma denúncia pendente</p>
                   <p style={{ fontSize: 13, color: '#9CA3AF' }}>Todas as denúncias foram processadas</p>
                 </div>
-              ) : complaints.map(complaint => {
+              ) : complaints
+              .filter(c => !filterCity || (c.city?.name || (c as any).city_name || '').toLowerCase().includes(filterCity.toLowerCase()))
+              .map(complaint => {
                 const isSel = selected?.id === complaint.id;
                 return (
                   <div

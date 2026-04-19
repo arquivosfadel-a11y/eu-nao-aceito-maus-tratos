@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Search, X } from 'lucide-react';
+import { Users, Search, Pencil, Trash2 } from 'lucide-react';
 import Sidebar from '@/components/shared/Sidebar';
+import EditUserModal from '@/components/ui/EditUserModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import api from '@/lib/api';
 
 const PRIMARY   = '#1B4332';
@@ -10,19 +12,9 @@ const SECONDARY = '#52B788';
 const ACCENT    = '#F4A261';
 const BG        = '#F0F7F4';
 const SHADOW    = '0 1px 6px rgba(0,0,0,0.06)';
-const INPUT     =
-  'w-full border border-[#D1FAE5] rounded-[10px] px-3 py-2.5 text-sm ' +
-  'focus:outline-none focus:ring-2 focus:ring-[#52B788] focus:border-transparent ' +
-  'placeholder:text-gray-400 text-gray-800';
-const LABEL = {
-  display: 'block', fontSize: 11, fontWeight: 700, color: '#9CA3AF',
-  textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: 6,
-};
 
 function Spinner() {
-  return (
-    <div style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid #D1FAE5', borderTopColor: PRIMARY, animation: 'spin 0.85s linear infinite' }} />
-  );
+  return <div style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid #D1FAE5', borderTopColor: PRIMARY, animation: 'spin 0.85s linear infinite' }} />;
 }
 
 function StatusDot({ active }: { active: boolean }) {
@@ -35,21 +27,15 @@ function StatusDot({ active }: { active: boolean }) {
 }
 
 export default function CidadaosPage() {
-  const [users,      setUsers]      = useState<any[]>([]);
-  const [cities,     setCities]     = useState<any[]>([]);
-  const [loading,    setLoading]    = useState(true);
-  const [search,     setSearch]     = useState('');
-  const [filterCity, setFilterCity] = useState('');
-  const [editing,    setEditing]    = useState<any | null>(null);
-  const [showForm,   setShowForm]   = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', city_id: '' });
+  const [users,       setUsers]       = useState<any[]>([]);
+  const [loading,     setLoading]     = useState(true);
+  const [search,      setSearch]      = useState('');
+  const [filterCity,  setFilterCity]  = useState('');
+  const [editTarget,  setEditTarget]  = useState<any | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+  const [deleting,    setDeleting]    = useState(false);
 
-  useEffect(() => { fetchCities(); fetchUsers(); }, []);
-
-  const fetchCities = async () => {
-    const res = await api.get('/cities');
-    setCities(res.data.cities || []);
-  };
+  useEffect(() => { fetchUsers(); }, []);
 
   const fetchUsers = async () => {
     try {
@@ -58,31 +44,29 @@ export default function CidadaosPage() {
     } catch {} finally { setLoading(false); }
   };
 
-  const openEdit = (user: any) => {
-    setEditing(user);
-    setForm({ name: user.name, email: user.email, phone: user.phone || '', city_id: user.city_id || '' });
-    setShowForm(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await api.put(`/users/${editing.id}`, form);
-      alert('Cidadão atualizado!');
-      setShowForm(false);
-      setEditing(null);
-      fetchUsers();
-    } catch (error: any) { alert(error.response?.data?.message || 'Erro ao salvar'); }
-  };
-
   const handleToggle = async (id: string, is_active: boolean) => {
     await api.put(`/users/${id}`, { is_active: !is_active });
     fetchUsers();
   };
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/users/${deleteTarget.id}`);
+      setDeleteTarget(null);
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Erro ao remover usuário.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const filtered = users.filter(u => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
-    const matchCity   = filterCity ? u.city_id === filterCity : true;
+    const cityName = (u.city_name || u.city?.name || '').toLowerCase();
+    const matchCity = filterCity ? cityName.includes(filterCity.toLowerCase()) : true;
     return matchSearch && matchCity;
   });
 
@@ -112,60 +96,14 @@ export default function CidadaosPage() {
             <Search size={16} style={{ color: '#9CA3AF', flexShrink: 0 }} />
             <input type="text" placeholder="Buscar por nome ou email..." value={search} onChange={e => setSearch(e.target.value)}
               className="flex-1 text-sm bg-transparent focus:outline-none placeholder:text-gray-400 text-gray-800" />
-            <select value={filterCity} onChange={e => setFilterCity(e.target.value)}
-              style={{ border: `1.5px solid #D1FAE5`, borderRadius: 10, padding: '8px 12px', fontSize: 13, color: '#374151', background: '#fff', outline: 'none', cursor: 'pointer', flexShrink: 0 }}>
-              <option value="">Todas as cidades</option>
-              {cities.map(c => <option key={c.id} value={c.id}>{c.name} — {c.state}</option>)}
-            </select>
+            <input
+              type="text"
+              placeholder="Filtrar por cidade..."
+              value={filterCity}
+              onChange={e => setFilterCity(e.target.value)}
+              style={{ border: '1.5px solid #D1FAE5', borderRadius: 10, padding: '8px 12px', fontSize: 13, color: '#374151', background: '#fff', outline: 'none', flexShrink: 0, width: 180 }}
+            />
           </div>
-
-          {showForm && editing && (
-            <div className="bg-white" style={{ borderRadius: 16, boxShadow: SHADOW, borderLeft: `4px solid ${SECONDARY}`, padding: 28 }}>
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <h2 style={{ fontSize: 17, fontWeight: 700, color: '#111827' }}>Editar Cidadão</h2>
-                  <p style={{ fontSize: 13, color: '#9CA3AF', marginTop: 3 }}>Atualize os dados do cidadão</p>
-                </div>
-                <button onClick={() => { setShowForm(false); setEditing(null); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 4 }}>
-                  <X size={18} style={{ color: '#9CA3AF' }} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label style={LABEL}>Nome *</label>
-                    <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className={INPUT} required />
-                  </div>
-                  <div>
-                    <label style={LABEL}>Email *</label>
-                    <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className={INPUT} required />
-                  </div>
-                  <div>
-                    <label style={LABEL}>Telefone</label>
-                    <input type="text" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className={INPUT} />
-                  </div>
-                  <div>
-                    <label style={LABEL}>Cidade</label>
-                    <select value={form.city_id} onChange={e => setForm({ ...form, city_id: e.target.value })} className={INPUT}>
-                      <option value="">Selecione...</option>
-                      {cities.map(c => <option key={c.id} value={c.id}>{c.name} — {c.state}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="flex gap-3 justify-end">
-                  <button type="button" onClick={() => { setShowForm(false); setEditing(null); }}
-                    style={{ padding: '10px 20px', borderRadius: 10, fontSize: 14, border: `1.5px solid #D1FAE5`, background: 'transparent', color: '#6B7280', cursor: 'pointer', fontWeight: 500 }}
-                    onMouseEnter={e => (e.currentTarget.style.background = BG)}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>Cancelar</button>
-                  <button type="submit"
-                    style={{ padding: '10px 24px', borderRadius: 10, fontSize: 14, backgroundColor: PRIMARY, color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}
-                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2d6a4f')}
-                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = PRIMARY)}>Salvar Alterações</button>
-                </div>
-              </form>
-            </div>
-          )}
 
           <div className="bg-white overflow-hidden" style={{ borderRadius: 16, boxShadow: SHADOW }}>
             <div className="px-6 py-4 flex items-center gap-3" style={{ borderBottom: `1px solid ${BG}` }}>
@@ -194,7 +132,7 @@ export default function CidadaosPage() {
                 ) : filtered.length === 0 ? (
                   <tr><td colSpan={7} className="text-center py-16">
                     <Users size={36} style={{ color: '#D1FAE5', margin: '0 auto 12px' }} />
-                    <p style={{ fontSize: 13, color: '#9CA3AF' }}>{search ? 'Nenhum cidadão encontrado.' : 'Nenhum cidadão cadastrado ainda.'}</p>
+                    <p style={{ fontSize: 13, color: '#9CA3AF' }}>{search || filterCity ? 'Nenhum cidadão encontrado.' : 'Nenhum cidadão cadastrado ainda.'}</p>
                   </td></tr>
                 ) : filtered.map((user, i) => (
                   <tr key={user.id}
@@ -212,20 +150,33 @@ export default function CidadaosPage() {
                     </td>
                     <td className="px-6 py-4"><p style={{ fontSize: 13, color: '#6B7280' }}>{user.email}</p></td>
                     <td className="px-6 py-4"><p style={{ fontSize: 13, color: '#6B7280' }}>{user.phone || '—'}</p></td>
-                    <td className="px-6 py-4"><p style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{user.city?.name || '—'}</p></td>
+                    <td className="px-6 py-4"><p style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{user.city_name || user.city?.name || '—'}</p></td>
                     <td className="px-6 py-4"><p style={{ fontSize: 12, color: '#9CA3AF' }}>{new Date(user.createdAt).toLocaleDateString('pt-BR')}</p></td>
                     <td className="px-6 py-4"><StatusDot active={user.is_active} /></td>
                     <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button onClick={() => openEdit(user)}
-                          style={{ fontSize: 12, fontWeight: 600, backgroundColor: `${SECONDARY}20`, color: PRIMARY, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => setEditTarget(user)}
+                          title="Editar"
+                          style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, backgroundColor: `${SECONDARY}20`, color: PRIMARY, padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
                           onMouseEnter={e => (e.currentTarget.style.backgroundColor = `${SECONDARY}35`)}
-                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = `${SECONDARY}20`)}>Editar</button>
-                        <button onClick={() => handleToggle(user.id, user.is_active)}
-                          style={{ fontSize: 12, fontWeight: 600, backgroundColor: user.is_active ? '#FEF2F2' : '#ECFDF5', color: user.is_active ? '#DC2626' : '#059669', padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
+                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = `${SECONDARY}20`)}>
+                          <Pencil size={13} strokeWidth={2} /> Editar
+                        </button>
+                        <button
+                          onClick={() => handleToggle(user.id, user.is_active)}
+                          style={{ fontSize: 12, fontWeight: 600, backgroundColor: user.is_active ? '#FEF2F2' : '#ECFDF5', color: user.is_active ? '#DC2626' : '#059669', padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
                           onMouseEnter={e => (e.currentTarget.style.backgroundColor = user.is_active ? '#FECACA' : '#A7F3D0')}
                           onMouseLeave={e => (e.currentTarget.style.backgroundColor = user.is_active ? '#FEF2F2' : '#ECFDF5')}>
                           {user.is_active ? 'Desativar' : 'Ativar'}
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(user)}
+                          title="Remover"
+                          style={{ display: 'flex', alignItems: 'center', padding: '5px 8px', borderRadius: 8, border: 'none', cursor: 'pointer', backgroundColor: '#FEF2F2', color: '#DC2626' }}
+                          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FECACA')}
+                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FEF2F2')}>
+                          <Trash2 size={13} strokeWidth={2} />
                         </button>
                       </div>
                     </td>
@@ -236,6 +187,22 @@ export default function CidadaosPage() {
           </div>
         </div>
       </main>
+
+      {editTarget && (
+        <EditUserModal user={editTarget} onClose={() => setEditTarget(null)} onSaved={fetchUsers} />
+      )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          title="Remover cidadão"
+          message={`Tem certeza que deseja remover "${deleteTarget.name}"? Esta ação não pode ser desfeita.`}
+          confirmLabel="Remover"
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+          loading={deleting}
+        />
+      )}
+
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
