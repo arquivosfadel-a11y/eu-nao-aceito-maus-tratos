@@ -79,11 +79,18 @@ export default function LoginScreen({ navigation }) {
           <Text style={[styles.deco, { bottom: 72, right: 32, fontSize: 36 }]}>🐈</Text>
           <Text style={[styles.deco, { bottom: 58, left: 26,  fontSize: 32 }]}>🦴</Text>
 
-          <Image
-            source={require('../../assets/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <View style={styles.logosRow}>
+            <Image
+              source={require('../../assets/logorafael.png')}
+              style={styles.logoSide}
+              resizeMode="contain"
+            />
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logoSide}
+              resizeMode="contain"
+            />
+          </View>
           <Text style={styles.titleLine1}>Eu Não Aceito</Text>
           <Text style={styles.titleLine2}>Maus Tratos</Text>
           <Text style={styles.tagline}>Proteja quem não tem voz 🐾</Text>
@@ -196,10 +203,16 @@ const styles = StyleSheet.create({
     opacity: 0.08,
   },
 
-  logo: {
-    width: 156,
-    height: 156,
+  logosRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
     marginBottom: 14,
+  },
+  logoSide: {
+    width: 80,
+    height: 80,
   },
 
   titleLine1: {

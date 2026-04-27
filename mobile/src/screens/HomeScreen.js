@@ -181,11 +181,18 @@ export default function HomeScreen({ navigation }) {
 
           {/* MOTIVACIONAL */}
           <View style={styles.motiv}>
-            <Text style={styles.motivIcon}>💚</Text>
-            <Text style={styles.motivTitle}>Você faz a diferença!</Text>
-            <Text style={styles.motivText}>
-              Cada denúncia salva uma vida.{'\n'}Obrigado por fazer parte da causa.
-            </Text>
+            <Image
+              source={require('../../assets/logorafael.png')}
+              style={styles.motivLogo}
+              resizeMode="contain"
+            />
+            <View style={styles.motivDivider} />
+            <View style={styles.motivTexts}>
+              <Text style={styles.motivTitle}>Você faz a diferença!</Text>
+              <Text style={styles.motivText}>
+                Cada denúncia salva uma vida.{'\n'}Obrigado por fazer parte da causa.
+              </Text>
+            </View>
           </View>
 
           {/* STATS */}
@@ -369,7 +376,8 @@ const styles = StyleSheet.create({
   motiv: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 14,
+    padding: 16,
+    flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#1B4332',
     shadowOffset: { width: 0, height: 2 },
@@ -377,13 +385,25 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  motivIcon: { fontSize: 22, marginBottom: 6 },
+  motivLogo: {
+    width: 80,
+    height: 80,
+  },
+  motivDivider: {
+    width: 1,
+    height: 80,
+    backgroundColor: '#E0E0E0',
+    marginHorizontal: 14,
+  },
+  motivTexts: {
+    flex: 1,
+  },
   motivTitle: {
-    fontSize: 13, fontWeight: '800', color: '#1B4332',
-    marginBottom: 4, textAlign: 'center',
+    fontSize: 14, fontWeight: '800', color: '#1B4332',
+    marginBottom: 6,
   },
   motivText: {
-    fontSize: 10, color: '#888', textAlign: 'center', lineHeight: 16,
+    fontSize: 11, color: '#666', lineHeight: 17,
   },
 
   /* ── STATS ── */
