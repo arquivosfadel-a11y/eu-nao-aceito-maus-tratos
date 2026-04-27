@@ -181,13 +181,25 @@ export default function HomeScreen({ navigation }) {
 
           {/* MOTIVACIONAL */}
           <View style={styles.motiv}>
-            <Image
-              source={require('../../assets/logorafael.png')}
-              style={styles.motivLogo}
-              resizeMode="contain"
-            />
+            {/* Coluna esquerda — fundo verde para logo branco */}
+            <View style={styles.motivLogoCol}>
+              <Image
+                source={require('../../assets/logorafael.png')}
+                style={styles.motivLogo}
+                resizeMode="contain"
+              />
+            </View>
+
             <View style={styles.motivDivider} />
+
+            {/* Coluna direita — pata em gradiente simulado + texto */}
             <View style={styles.motivTexts}>
+              {/* Camada de gradiente: verde → laranja via Views sobrepostos */}
+              <View style={[styles.motivGradLayer, { backgroundColor: '#1B4332', opacity: 0.08, borderRadius: 10 }]} />
+              <View style={[styles.motivGradLayer, { backgroundColor: '#d8610c', opacity: 0.05, borderRadius: 10, top: '40%' }]} />
+              {/* Pata grande decorativa */}
+              <Text style={styles.motivPaw}>🐾</Text>
+              {/* Texto por cima */}
               <Text style={styles.motivTitle}>Você faz a diferença!</Text>
               <Text style={styles.motivText}>
                 Cada denúncia salva uma vida.{'\n'}Obrigado por fazer parte da causa.
@@ -268,8 +280,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   logoImage: {
-    width: 70,
-    height: 70,
+    width: 98,
+    height: 98,
     borderRadius: 12,
     resizeMode: 'contain',
     marginRight: 14,
@@ -376,14 +388,24 @@ const styles = StyleSheet.create({
   motiv: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 16,
+    padding: 0,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
     shadowColor: '#1B4332',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 8,
     elevation: 3,
+    overflow: 'hidden',
+  },
+  motivLogoCol: {
+    backgroundColor: '#1B4332',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
   },
   motivLogo: {
     width: 80,
@@ -391,19 +413,34 @@ const styles = StyleSheet.create({
   },
   motivDivider: {
     width: 1,
-    height: 80,
     backgroundColor: '#E0E0E0',
-    marginHorizontal: 14,
   },
   motivTexts: {
     flex: 1,
+    padding: 14,
+    overflow: 'hidden',
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  motivGradLayer: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+  },
+  motivPaw: {
+    position: 'absolute',
+    right: -8,
+    bottom: -10,
+    fontSize: 72,
+    opacity: 0.13,
   },
   motivTitle: {
     fontSize: 14, fontWeight: '800', color: '#1B4332',
     marginBottom: 6,
+    zIndex: 1,
   },
   motivText: {
     fontSize: 11, color: '#666', lineHeight: 17,
+    zIndex: 1,
   },
 
   /* ── STATS ── */
