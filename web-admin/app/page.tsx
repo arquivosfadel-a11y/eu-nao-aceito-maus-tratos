@@ -1,4 +1,6 @@
 import { Navbar } from "@/components/public/Navbar";
+import { LogoHero } from "@/components/public/LogoHero";
+import { ImpactPopup } from "@/components/public/ImpactPopup";
 import { HeroSection } from "@/components/public/HeroSection";
 import { StatsBar } from "@/components/public/StatsBar";
 import { HowItWorks } from "@/components/public/HowItWorks";
@@ -10,7 +12,9 @@ import { Footer } from "@/components/public/Footer";
 export default function Home() {
   return (
     <main className="min-h-screen overflow-x-hidden">
+      <ImpactPopup />
       <Navbar />
+      <LogoHero />
       <HeroSection />
       <StatsBar />
       <HowItWorks />

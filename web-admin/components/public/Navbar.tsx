@@ -37,13 +37,13 @@ export function Navbar() {
           <Image
             src="/logo.png"
             alt="Eu Não Aceito Maus Tratos"
-            width={40}
-            height={40}
-            className="rounded-full"
+            width={52}
+            height={52}
+            style={{ borderRadius: 10 }}
           />
-          <span className="font-black text-white text-xs leading-tight hidden sm:block uppercase tracking-tight">
-            EU NÃO ACEITO<br />
-            <span className="text-[#F4A261]">MAUS TRATOS</span>
+          <span className="hidden sm:flex flex-col leading-tight uppercase tracking-tight">
+            <span className="font-bold text-white" style={{ fontSize: 14 }}>EU NÃO ACEITO</span>
+            <span className="font-bold" style={{ fontSize: 16, color: "#d8610c" }}>MAUS TRATOS</span>
           </span>
         </Link>
 
