@@ -1,21 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { sequelize } = require('../config/database');
-const { DataTypes } = require('sequelize');
-
-// Define model inline (simples, sem arquivo separado)
-const NewsletterSubscriber = sequelize.define('NewsletterSubscriber', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  name: { type: DataTypes.STRING, allowNull: false },
-  email: { type: DataTypes.STRING, allowNull: false, unique: true },
-}, {
-  tableName: 'newsletter_subscribers',
-  timestamps: true,
-});
 
 router.post('/', async (req, res) => {
   const { name, email } = req.body;
@@ -24,7 +9,12 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    await NewsletterSubscriber.findOrCreate({ where: { email }, defaults: { name, email } });
+    await sequelize.query(
+      `INSERT INTO newsletter_subscribers (id, name, email, "createdAt", "updatedAt")
+       VALUES (gen_random_uuid(), :name, :email, NOW(), NOW())
+       ON CONFLICT (email) DO NOTHING`,
+      { replacements: { name, email }, type: sequelize.QueryTypes.INSERT }
+    );
     return res.json({ success: true });
   } catch (err) {
     console.error('Newsletter error:', err);

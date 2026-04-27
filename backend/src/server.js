@@ -56,6 +56,8 @@ app.use('/api/work-logs', workLogRoutes);
 const userRoutes = require('./routes/userRoutes');
 app.use('/api/users', userRoutes);
 app.use('/api/animals', animalRoutes);
+const newsletterRoutes = require('./routes/newsletterRoutes');
+app.use('/api/newsletter', newsletterRoutes);
 
 // Rota de health check
 app.get('/api/health', (req, res) => {
