@@ -143,6 +143,17 @@
   }
 }
 
+/* ─── Aurora background animation ────────────────────── */
+
+@keyframes aurora {
+  from {
+    background-position: 50% 50%, 50% 50%;
+  }
+  to {
+    background-position: 350% 50%, 350% 50%;
+  }
+}
+
 /* ─── Campaign animations ─────────────────────────────── */
 
 @keyframes pulse-orange {
