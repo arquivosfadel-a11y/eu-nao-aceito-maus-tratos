@@ -13,7 +13,6 @@ const mockAnimals = [
     age: "2 anos",
     city: "São Paulo, SP",
     photo: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop&auto=format",
-    accent: "#d8610c",
   },
   {
     name: "Mimi",
@@ -22,7 +21,6 @@ const mockAnimals = [
     age: "1 ano",
     city: "Campinas, SP",
     photo: "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&h=300&fit=crop&auto=format",
-    accent: "#52B788",
   },
   {
     name: "Thor",
@@ -31,7 +29,6 @@ const mockAnimals = [
     age: "4 anos",
     city: "Ribeirão Preto, SP",
     photo: "https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400&h=300&fit=crop&auto=format",
-    accent: "#d8610c",
   },
   {
     name: "Mel",
@@ -40,7 +37,6 @@ const mockAnimals = [
     age: "3 anos",
     city: "Sorocaba, SP",
     photo: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop&auto=format",
-    accent: "#52B788",
   },
 ];
 
@@ -52,16 +48,16 @@ function AnimalCard({ animal, index, active }: { animal: typeof mockAnimals[0]; 
       transition={{ duration: 0.55, delay: 0.1 + index * 0.12, ease: [0.16, 1, 0.3, 1] }}
       className="group bg-white rounded-2xl overflow-hidden cursor-pointer"
       style={{
-        border: "1px solid #E8F0EC",
-        boxShadow: "0 2px 12px rgba(27,67,50,0.06)",
+        border: "1px solid #f0f0f0",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
         transition: "box-shadow 0.25s, transform 0.25s",
       }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 32px rgba(27,67,50,0.12)`;
-        (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 16px 40px rgba(216,97,12,0.18)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-8px)";
       }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 12px rgba(27,67,50,0.06)";
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.04)";
         (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
       }}
     >
@@ -74,17 +70,13 @@ function AnimalCard({ animal, index, active }: { animal: typeof mockAnimals[0]; 
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-
-        {/* Espécie badge */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
         <span
           className="absolute top-3 left-3 text-white text-xs font-bold px-2.5 py-1 rounded-full"
-          style={{ backgroundColor: animal.accent }}
+          style={{ backgroundColor: "#d8610c" }}
         >
           {animal.species}
         </span>
-
-        {/* Disponível */}
         <span className="absolute top-3 right-3 bg-white text-[10px] font-bold px-2.5 py-1 rounded-full text-[#1B4332]">
           Disponível
         </span>
@@ -100,50 +92,47 @@ function AnimalCard({ animal, index, active }: { animal: typeof mockAnimals[0]; 
         </div>
         <p className="text-xs text-gray-400 mb-3">{animal.breed}</p>
 
-        <div className="flex items-center gap-1 text-gray-400 text-xs mb-4">
+        <div className="flex items-center gap-1 text-gray-400 text-xs mb-0">
           <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
           </svg>
           {animal.city}
         </div>
+      </div>
 
-        <button
-          className="w-full text-sm font-bold py-2.5 rounded-xl transition-all duration-200 cursor-pointer"
-          style={{ background: `${animal.accent}15`, color: animal.accent, border: `1.5px solid ${animal.accent}30` }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.background = animal.accent;
-            (e.currentTarget as HTMLButtonElement).style.color = "#fff";
-            (e.currentTarget as HTMLButtonElement).style.borderColor = animal.accent;
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.background = `${animal.accent}15`;
-            (e.currentTarget as HTMLButtonElement).style.color = animal.accent;
-            (e.currentTarget as HTMLButtonElement).style.borderColor = `${animal.accent}30`;
-          }}
+      {/* Slide-up button on hover */}
+      <div className="overflow-hidden" style={{ height: 48 }}>
+        <div
+          className="h-12 flex items-center justify-center font-bold text-white text-sm translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+          style={{ backgroundColor: "#d8610c" }}
         >
           Tenho Interesse
-        </button>
+        </div>
       </div>
     </motion.div>
   );
 }
 
 export function AdoptionSection() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="adocao" className="py-28" style={{ background: "#F8FBF9" }} ref={ref}>
+    <section id="adocao" ref={ref} className="py-28 bg-white">
       <div className="max-w-6xl mx-auto px-6">
 
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="inline-block text-[#52B788] text-xs font-bold tracking-widest uppercase mb-4">
+          <span
+            className="inline-block text-xs font-bold tracking-widest uppercase mb-4"
+            style={{ color: "#d8610c" }}
+          >
             🐾 Adoção Responsável
           </span>
           <h2 className="text-4xl sm:text-5xl font-black text-[#1B4332] leading-tight mb-4">
@@ -152,15 +141,7 @@ export function AdoptionSection() {
           </h2>
           <p className="text-base text-gray-400 max-w-md mx-auto leading-relaxed">
             Cada animal tem uma história e merece um lar cheio de amor.
-            Encontre seu novo melhor amigo.
           </p>
-
-          {/* Divisor */}
-          <div className="flex items-center justify-center gap-3 mt-8">
-            <div className="h-px w-12 bg-gray-200" />
-            <span className="text-gray-300 text-lg">🐾</span>
-            <div className="h-px w-12 bg-gray-200" />
-          </div>
         </motion.div>
 
         {/* Cards */}
@@ -173,27 +154,18 @@ export function AdoptionSection() {
         {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.65 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.5 }}
           className="text-center"
         >
           <Link
             href="#"
-            className="inline-block font-bold text-sm px-10 py-3.5 rounded-full transition-all duration-200 cursor-pointer"
+            className="inline-block font-bold text-sm px-10 py-3.5 rounded-full transition-all duration-200 cursor-pointer hover:bg-[#52B788] hover:text-white"
             style={{
               border: "1.5px solid #52B788",
               color: "#52B788",
               background: "transparent",
-            }}
-            onMouseEnter={e => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.background = "#52B788";
-              el.style.color = "#fff";
-            }}
-            onMouseLeave={e => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.background = "transparent";
-              el.style.color = "#52B788";
             }}
           >
             Ver Todos os Animais →

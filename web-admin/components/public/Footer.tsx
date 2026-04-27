@@ -33,38 +33,19 @@ const SOCIAL_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="relative text-white overflow-hidden" style={{ backgroundColor: "#1B4332" }}>
-      {/* Paw pattern background */}
-      <div
-        className="absolute inset-0 pointer-events-none select-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Ctext x='16' y='44' font-size='32' fill='%23ffffff' opacity='0.04'%3E%F0%9F%90%BE%3C/text%3E%3C/svg%3E")`,
-          backgroundSize: "64px 64px",
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Shimmer stripe at top */}
-      <div className="relative h-1.5 overflow-hidden" style={{ backgroundColor: "#d8610c" }}>
-        <span
-          className="absolute inset-y-0 w-1/3"
-          style={{
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)",
-            animation: "shimmer-slide 2.8s ease-in-out infinite",
-          }}
-          aria-hidden="true"
-        />
-      </div>
+    <footer className="relative text-white overflow-hidden" style={{ backgroundColor: "#0d1f18" }}>
+      {/* Orange stripe on top */}
+      <div style={{ height: 2, backgroundColor: "#d8610c" }} />
 
       <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* Col 1 — Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <Image src="/logo.png" alt="Eu Não Aceito Maus Tratos" width={44} height={44} className="rounded-full" />
+              <Image src="/logorafael.png" alt="Eu Não Aceito Maus Tratos" width={44} height={44} style={{ objectFit: "contain" }} />
               <span className="font-black text-base leading-tight uppercase tracking-tight">
                 Eu Não Aceito<br />
-                <span style={{ color: "#F4A261" }}>Maus Tratos</span>
+                <span style={{ color: "#d8610c" }}>Maus Tratos</span>
               </span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
@@ -78,19 +59,11 @@ export function Footer() {
                   aria-label={s.label}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer hover:bg-[#d8610c] hover:text-white"
                   style={{
                     background: "rgba(255,255,255,0.06)",
                     border: "1px solid rgba(255,255,255,0.12)",
                     color: "rgba(255,255,255,0.55)",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.backgroundColor = "#d8610c";
-                    (e.currentTarget as HTMLElement).style.color = "#fff";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(255,255,255,0.06)";
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)";
                   }}
                 >
                   {s.icon}
@@ -164,7 +137,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div
           className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}
+          style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>
             © {new Date().getFullYear()} VETech Systems — Eu Não Aceito Maus Tratos

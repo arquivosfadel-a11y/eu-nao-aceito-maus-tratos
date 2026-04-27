@@ -14,10 +14,11 @@ const NAV_LINKS = [
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { scrollY } = useScroll();
-
-  const bgOpacity = useTransform(scrollY, [0, 80], [0, 0.95]);
-  const shadowOpacity = useTransform(scrollY, [0, 80], [0, 0.25]);
-  const blurAmount = useTransform(scrollY, [0, 80], [0, 12]);
+  const boxShadow = useTransform(
+    scrollY,
+    [0, 80],
+    ["0 4px 24px rgba(0,0,0,0)", "0 4px 24px rgba(0,0,0,0.28)"]
+  );
 
   return (
     <motion.nav
@@ -25,58 +26,46 @@ export function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="fixed top-0 inset-x-0 z-50"
-      style={{
-        backdropFilter: useTransform(blurAmount, (v) => `blur(${v}px)`),
-        backgroundColor: useTransform(bgOpacity, (v) => `rgba(27, 67, 50, ${v})`),
-        boxShadow: useTransform(shadowOpacity, (v) => `0 4px 24px rgba(0,0,0,${v})`),
-      }}
+      style={{ backgroundColor: "#1B4332", boxShadow }}
     >
-      <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
-        {/* Logo */}
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 cursor-pointer flex-shrink-0">
           <Image
             src="/logorafael.png"
             alt="Eu Não Aceito Maus Tratos"
-            width={95}
-            height={95}
-            style={{ borderRadius: 10 }}
+            width={68}
+            height={68}
+            style={{ objectFit: "contain" }}
           />
           <span className="hidden sm:flex flex-col leading-tight uppercase tracking-tight">
-            <span className="font-bold text-white" style={{ fontSize: 20 }}>EU NÃO ACEITO</span>
-            <span className="font-bold" style={{ fontSize: 22, color: "#d8610c" }}>MAUS TRATOS</span>
+            <span className="font-bold text-white" style={{ fontSize: 16 }}>EU NÃO ACEITO</span>
+            <span className="font-bold" style={{ fontSize: 17, color: "#d8610c" }}>MAUS TRATOS</span>
           </span>
         </Link>
 
-        {/* Desktop links */}
         <div className="hidden md:flex items-center gap-8">
           {NAV_LINKS.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className="text-sm font-semibold text-white/80 hover:text-white transition-colors duration-200 cursor-pointer"
+              className="text-sm font-semibold transition-colors duration-200 cursor-pointer hover:text-white"
+              style={{ color: "rgba(255,255,255,0.8)" }}
             >
               {item.label}
             </Link>
           ))}
         </div>
 
-        {/* CTA Button — Denunciar with pulse */}
         <div className="hidden md:flex items-center">
           <Link
             href="#denunciar"
-            className="relative text-sm font-extrabold text-white px-6 py-2.5 rounded-full cursor-pointer overflow-hidden"
-            style={{ backgroundColor: "#d8610c" }}
+            className="text-sm font-bold text-white px-6 py-2.5 cursor-pointer transition-all duration-200 hover:brightness-110"
+            style={{ backgroundColor: "#d8610c", borderRadius: 6 }}
           >
-            <span
-              className="absolute inset-0 rounded-full animate-ping opacity-30"
-              style={{ backgroundColor: "#d8610c" }}
-              aria-hidden="true"
-            />
-            <span className="relative z-10">Denunciar</span>
+            DENUNCIAR
           </Link>
         </div>
 
-        {/* Mobile hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Abrir menu"
@@ -92,30 +81,31 @@ export function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden bg-[#1B4332]/98 border-t border-white/10 px-6 py-4 flex flex-col gap-4"
+          className="md:hidden border-t border-white/10 px-6 py-4 flex flex-col gap-4"
+          style={{ backgroundColor: "#1B4332" }}
         >
           {NAV_LINKS.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               onClick={() => setMenuOpen(false)}
-              className="text-white/80 font-semibold cursor-pointer hover:text-white transition-colors"
+              className="font-semibold cursor-pointer hover:text-white transition-colors"
+              style={{ color: "rgba(255,255,255,0.8)" }}
             >
               {item.label}
             </Link>
           ))}
           <Link
             href="#denunciar"
-            className="font-extrabold text-white text-center py-2.5 rounded-full cursor-pointer"
-            style={{ backgroundColor: "#d8610c" }}
+            className="font-bold text-white text-center py-2.5 cursor-pointer"
+            style={{ backgroundColor: "#d8610c", borderRadius: 6 }}
             onClick={() => setMenuOpen(false)}
           >
-            Denunciar
+            DENUNCIAR
           </Link>
         </motion.div>
       )}
