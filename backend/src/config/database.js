@@ -68,7 +68,7 @@ const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ Banco de dados conectado com sucesso!');
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
     console.log('✅ Tabelas sincronizadas!');
     await runMigrations();
   } catch (error) {
