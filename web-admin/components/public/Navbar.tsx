@@ -35,10 +35,10 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 cursor-pointer flex-shrink-0">
           <Image
-            src="/logo.png"
+            src="/logorafael.png"
             alt="Eu Não Aceito Maus Tratos"
-            width={52}
-            height={52}
+            width={68}
+            height={68}
             style={{ borderRadius: 10 }}
           />
           <span className="hidden sm:flex flex-col leading-tight uppercase tracking-tight">

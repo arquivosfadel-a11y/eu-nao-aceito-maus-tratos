@@ -1,5 +1,4 @@
 import { Navbar } from "@/components/public/Navbar";
-import { LogoHero } from "@/components/public/LogoHero";
 import { ImpactPopup } from "@/components/public/ImpactPopup";
 import { HeroSection } from "@/components/public/HeroSection";
 import { StatsBar } from "@/components/public/StatsBar";
@@ -14,7 +13,6 @@ export default function Home() {
     <main className="min-h-screen overflow-x-hidden">
       <ImpactPopup />
       <Navbar />
-      <LogoHero />
       <HeroSection />
       <StatsBar />
       <HowItWorks />

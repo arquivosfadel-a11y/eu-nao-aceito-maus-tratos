@@ -1,292 +1,289 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image";
-import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
-import { ParticlesPaws } from "./ParticlesPaws";
 
-const TITLE_WORDS_WHITE = ["Seja", "a", "voz"];
-const TITLE_WORDS_ORANGE = ["de", "quem", "não", "pode", "falar."];
-
-const PHOTOS = [
-  {
-    src: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=80",
-    alt: "Cachorro resgatado olhando para a câmera",
-    large: true,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80",
-    alt: "Cão feliz após resgate",
-    large: false,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&q=80",
-    alt: "Gato em lar temporário",
-    large: false,
-  },
+const PAWS = [
+  { top: "8%",  left: "5%",  size: 64, opacity: 0.04, rotate: -15 },
+  { top: "20%", left: "88%", size: 80, opacity: 0.03, rotate: 20  },
+  { top: "55%", left: "3%",  size: 40, opacity: 0.05, rotate: 10  },
+  { top: "70%", left: "92%", size: 52, opacity: 0.04, rotate: -30 },
+  { top: "38%", left: "50%", size: 28, opacity: 0.03, rotate: 5   },
+  { top: "82%", left: "20%", size: 36, opacity: 0.05, rotate: -10 },
+  { top: "12%", left: "40%", size: 22, opacity: 0.03, rotate: 25  },
+  { top: "90%", left: "72%", size: 48, opacity: 0.04, rotate: 15  },
 ];
 
-function PhotoGrid() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+function ParticlesCanvas() {
+  const ref = useRef<HTMLCanvasElement>(null);
 
-  const rotateX = useSpring(useTransform(mouseY, [-200, 200], [6, -6]), { stiffness: 120, damping: 20 });
-  const rotateY = useSpring(useTransform(mouseX, [-200, 200], [-6, 6]), { stiffness: 120, damping: 20 });
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  function onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    mouseX.set(e.clientX - cx);
-    mouseY.set(e.clientY - cy);
-  }
+    const resize = () => {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
 
-  function onMouseLeave() {
-    mouseX.set(0);
-    mouseY.set(0);
-  }
+    const pts = Array.from({ length: 90 }, () => ({
+      x:  Math.random() * canvas.width,
+      y:  Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r:  Math.random() * 1.4 + 0.4,
+      hue: Math.random() > 0.7 ? "82,183,136" : "255,255,255",
+    }));
+
+    let id: number;
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pts.forEach((p) => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width)  p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.hue},0.5)`;
+        ctx.fill();
+      });
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i + 1; j < pts.length; j++) {
+          const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+          const d  = Math.sqrt(dx * dx + dy * dy);
+          if (d < 90) {
+            ctx.beginPath();
+            ctx.moveTo(pts[i].x, pts[i].y);
+            ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.strokeStyle = `rgba(82,183,136,${0.06 * (1 - d / 90)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      id = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(id); window.removeEventListener("resize", resize); };
+  }, []);
 
   return (
-    <motion.div
-      className="grid grid-cols-2 grid-rows-2 gap-3 h-[520px] lg:h-[580px]"
-      style={{ rotateX, rotateY, perspective: 1200, transformStyle: "preserve-3d" }}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
-      initial={{ opacity: 0, x: 60 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.9, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {/* Large photo — spans 2 rows left column */}
-      <div className="row-span-2 relative overflow-hidden rounded-[20px] shadow-2xl shadow-black/40">
-        <Image
-          src={PHOTOS[0].src}
-          alt={PHOTOS[0].alt}
-          fill
-          className="object-cover"
-          sizes="(max-width: 1024px) 45vw, 280px"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-      </div>
-
-      {/* Small photo top-right */}
-      <div className="relative overflow-hidden rounded-[20px] shadow-xl shadow-black/30">
-        <Image
-          src={PHOTOS[1].src}
-          alt={PHOTOS[1].alt}
-          fill
-          className="object-cover"
-          sizes="(max-width: 1024px) 45vw, 200px"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-      </div>
-
-      {/* Small photo bottom-right */}
-      <div className="relative overflow-hidden rounded-[20px] shadow-xl shadow-black/30">
-        <Image
-          src={PHOTOS[2].src}
-          alt={PHOTOS[2].alt}
-          fill
-          className="object-cover"
-          sizes="(max-width: 1024px) 45vw, 200px"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-      </div>
-    </motion.div>
+    <canvas
+      ref={ref}
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
+    />
   );
 }
+
+const wordReveal = {
+  hidden: { clipPath: "inset(100% 0% 0% 0%)", opacity: 0 },
+  visible: { clipPath: "inset(0% 0% 0% 0%)", opacity: 1 },
+};
 
 export function HeroSection() {
   return (
     <section
-      className="relative min-h-screen flex items-center overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%)" }}
+      id="hero"
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#050A06",
+        overflow: "hidden",
+      }}
     >
-      {/* Paw particles background */}
-      <ParticlesPaws />
+      <ParticlesCanvas />
 
-      {/* Subtle radial overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 70% 60% at 30% 50%, rgba(255,255,255,0.03) 0%, transparent 70%)" }}
-        aria-hidden="true"
-      />
+      {/* Grid sutil */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+        backgroundSize: "60px 60px",
+      }} />
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-24 pb-16">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
+      {/* Vinheta */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: "radial-gradient(ellipse 85% 80% at 50% 50%, transparent 40%, #050A06 100%)",
+      }} />
 
-          {/* ── Left: Text (55%) ── */}
-          <div className="flex-1 lg:w-[55%] flex flex-col items-start">
+      {/* Glow laranja canto superior direito */}
+      <div style={{
+        position: "absolute", top: 0, right: 0, width: 420, height: 420,
+        background: "radial-gradient(circle, rgba(216,97,12,0.06) 0%, transparent 70%)",
+        pointerEvents: "none",
+      }} />
 
-            {/* Badge — Abril Laranja */}
-            <motion.div
-              initial={{ opacity: 0, y: -16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="mb-6"
-            >
-              <span
-                className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2 rounded-full uppercase tracking-widest relative overflow-hidden"
-                style={{
-                  background: "linear-gradient(90deg, rgba(216,97,12,0.18) 0%, rgba(244,162,97,0.18) 100%)",
-                  border: "1px solid rgba(216,97,12,0.35)",
-                  color: "#F4A261",
-                }}
-              >
-                {/* Shimmer */}
-                <span
-                  className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_ease-in-out_infinite]"
-                  style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)" }}
-                  aria-hidden="true"
-                />
-                <span
-                  className="w-2 h-2 rounded-full flex-shrink-0 animate-pulse"
-                  style={{ backgroundColor: "#d8610c" }}
-                  aria-hidden="true"
-                />
-                Abril Laranja — Mês de Prevenção contra Maus Tratos
-              </span>
-            </motion.div>
+      {/* Linha horizontal sutil */}
+      <div style={{
+        position: "absolute", top: "58%", left: 0, right: 0, height: 1,
+        background: "rgba(82,183,136,0.08)", pointerEvents: "none",
+      }} />
 
-            {/* Title with word-by-word stagger reveal */}
-            <div className="mb-6">
-              <div className="flex flex-wrap gap-x-4 gap-y-1 mb-2">
-                {TITLE_WORDS_WHITE.map((word, i) => (
-                  <div key={word + i} className="overflow-hidden">
-                    <motion.span
-                      className="block text-white font-black"
-                      style={{ fontSize: "clamp(48px, 6vw, 72px)", lineHeight: 1.05 }}
-                      initial={{ y: "110%" }}
-                      animate={{ y: "0%" }}
-                      transition={{ duration: 0.65, delay: 0.25 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                    >
-                      {word}
-                    </motion.span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {TITLE_WORDS_ORANGE.map((word, i) => (
-                  <div key={word + i} className="overflow-hidden">
-                    <motion.span
-                      className="block font-black"
-                      style={{ fontSize: "clamp(48px, 6vw, 72px)", lineHeight: 1.05, color: "#d8610c" }}
-                      initial={{ y: "110%" }}
-                      animate={{ y: "0%" }}
-                      transition={{ duration: 0.65, delay: 0.55 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                    >
-                      {word}
-                    </motion.span>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* Patas decorativas */}
+      {PAWS.map((p, i) => (
+        <span key={i} style={{
+          position: "absolute", top: p.top, left: p.left,
+          fontSize: p.size, opacity: p.opacity,
+          transform: `rotate(${p.rotate}deg)`,
+          pointerEvents: "none", userSelect: "none", lineHeight: 1,
+        }}>🐾</span>
+      ))}
 
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.1 }}
-              className="text-lg font-medium mb-10 max-w-lg"
-              style={{ color: "rgba(255,255,255,0.85)", lineHeight: 1.65 }}
-            >
-              Cada denúncia salva uma vida. Registre maus tratos a animais e conecte com protetores verificados na sua região.
-            </motion.p>
+      {/* Conteúdo central */}
+      <div style={{
+        position: "relative", zIndex: 10,
+        display: "flex", flexDirection: "column", alignItems: "center",
+        textAlign: "center", padding: "0 24px", maxWidth: 900,
+      }}>
 
-            {/* CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.3 }}
-              className="flex flex-col sm:flex-row gap-4 mb-12"
-            >
-              {/* Primary — Denunciar with pulse */}
-              <Link
-                href="#denunciar"
-                className="relative flex items-center justify-center gap-2 font-extrabold text-white py-4 px-9 rounded-full text-base cursor-pointer overflow-hidden transition-transform duration-200 hover:scale-[1.03] active:scale-100"
-                style={{ backgroundColor: "#d8610c", boxShadow: "0 8px 32px rgba(216,97,12,0.4)" }}
-              >
-                <span
-                  className="absolute inset-0 rounded-full animate-ping opacity-25"
-                  style={{ backgroundColor: "#d8610c" }}
-                  aria-hidden="true"
-                />
-                <svg className="w-5 h-5 relative z-10 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                </svg>
-                <span className="relative z-10">Denunciar Agora</span>
-              </Link>
+        {/* Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "6px 18px", borderRadius: 20, marginBottom: 40,
+            background: "rgba(216,97,12,0.12)",
+            border: "1px solid rgba(216,97,12,0.35)",
+            color: "#d8610c", fontSize: 13, fontWeight: 600,
+          }}
+        >
+          <span>🧡</span>
+          <span>Abril Laranja — Prevenção contra Maus Tratos a Animais</span>
+        </motion.div>
 
-              {/* Secondary — Adotar */}
-              <Link
-                href="#adocao"
-                className="flex items-center justify-center gap-2 font-extrabold text-white py-4 px-9 rounded-full text-base cursor-pointer transition-all duration-200 hover:scale-[1.03] active:scale-100"
-                style={{ border: "2px solid rgba(255,255,255,0.3)" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#52B788";
-                  e.currentTarget.style.background = "rgba(82,183,136,0.12)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
-                  e.currentTarget.style.background = "transparent";
-                }}
-              >
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                Adotar um Animal
-              </Link>
-            </motion.div>
-
-            {/* Trust row */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 1.5 }}
-              className="flex flex-wrap gap-6 text-xs font-bold tracking-widest uppercase"
-              style={{ color: "rgba(255,255,255,0.4)" }}
-            >
-              {["100% Gratuito", "Anônimo", "Protetores Verificados"].map((label) => (
-                <span key={label} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#d8610c" }} aria-hidden="true" />
-                  {label}
-                </span>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* ── Right: Photos (45%) ── */}
-          <div className="hidden lg:block lg:w-[45%]">
-            <PhotoGrid />
-          </div>
+        {/* Título linha 1 */}
+        <div style={{ overflow: "hidden", marginBottom: 4 }}>
+          <motion.h1
+            variants={wordReveal}
+            initial="hidden"
+            animate="visible"
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              fontSize: "clamp(42px, 8vw, 80px)", fontWeight: 900,
+              color: "#ffffff", letterSpacing: "-2px", lineHeight: 1.05, margin: 0,
+            }}
+          >
+            EU NÃO ACEITO
+          </motion.h1>
         </div>
+
+        {/* Título linha 2 */}
+        <div style={{ overflow: "hidden", marginBottom: 28 }}>
+          <motion.h1
+            variants={wordReveal}
+            initial="hidden"
+            animate="visible"
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
+            style={{
+              fontSize: "clamp(42px, 8vw, 80px)", fontWeight: 900,
+              color: "#d8610c", letterSpacing: "-2px", lineHeight: 1.05, margin: 0,
+            }}
+          >
+            MAUS TRATOS.
+          </motion.h1>
+        </div>
+
+        {/* Linha decorativa */}
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: 60 }}
+          transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+          style={{ height: 3, background: "#d8610c", borderRadius: 2, marginBottom: 24 }}
+        />
+
+        {/* Subtítulo */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          style={{
+            fontSize: "clamp(16px, 2.5vw, 20px)", fontWeight: 300,
+            color: "rgba(255,255,255,0.6)", lineHeight: 1.6,
+            marginBottom: 44, maxWidth: 560,
+          }}
+        >
+          Seja a voz de quem não pode falar.<br />
+          Denuncie, proteja, adote.
+        </motion.p>
+
+        {/* Botões */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.8 }}
+          style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center" }}
+        >
+          <Link
+            href="#denunciar"
+            style={{
+              display: "inline-block", padding: "16px 36px",
+              background: "#d8610c", color: "#fff", fontWeight: 700,
+              fontSize: 15, borderRadius: 4, textDecoration: "none",
+              transition: "filter 0.2s, transform 0.2s, box-shadow 0.2s",
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.filter = "brightness(1.12)";
+              el.style.transform = "scale(1.02)";
+              el.style.boxShadow = "0 8px 32px rgba(216,97,12,0.4)";
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.filter = ""; el.style.transform = ""; el.style.boxShadow = "";
+            }}
+          >
+            Denunciar Agora
+          </Link>
+
+          <Link
+            href="#adocao"
+            style={{
+              display: "inline-block", padding: "16px 36px",
+              background: "transparent", color: "#fff", fontWeight: 600,
+              fontSize: 15, borderRadius: 4, textDecoration: "none",
+              border: "1px solid rgba(255,255,255,0.35)",
+              transition: "border-color 0.2s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.9)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.35)"; }}
+          >
+            Adotar um Animal
+          </Link>
+        </motion.div>
       </div>
 
       {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.8, duration: 0.6 }}
-        className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-2"
-        aria-hidden="true"
+        transition={{ delay: 1.2, duration: 0.8 }}
+        style={{
+          position: "absolute", bottom: 36, left: "50%", transform: "translateX(-50%)",
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+          color: "rgba(255,255,255,0.3)", fontSize: 10, letterSpacing: "0.2em",
+          fontWeight: 600, zIndex: 10,
+        }}
       >
-        <div className="w-6 h-10 border-2 border-white/20 rounded-full flex justify-center pt-2">
-          <motion.div
-            animate={{ y: [0, 14, 0] }}
-            transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: "#d8610c" }}
-          />
-        </div>
-        <span className="text-white/30 text-xs font-semibold tracking-widest uppercase">Rolar</span>
+        <span>ROLE PARA CONHECER</span>
+        <motion.span
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+          style={{ fontSize: 18 }}
+        >
+          ↓
+        </motion.span>
       </motion.div>
-
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          60%, 100% { transform: translateX(200%); }
-        }
-      `}</style>
     </section>
   );
 }
