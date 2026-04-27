@@ -17,11 +17,6 @@ const NewsletterSubscriber = sequelize.define('NewsletterSubscriber', {
   timestamps: true,
 });
 
-// Sync tabela ao carregar a rota
-NewsletterSubscriber.sync({ alter: false }).catch(() =>
-  NewsletterSubscriber.sync({ force: false })
-);
-
 router.post('/', async (req, res) => {
   const { name, email } = req.body;
   if (!name || !email) {
