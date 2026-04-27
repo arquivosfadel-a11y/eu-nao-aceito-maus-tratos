@@ -31,19 +31,19 @@ export function Navbar() {
         boxShadow: useTransform(shadowOpacity, (v) => `0 4px 24px rgba(0,0,0,${v})`),
       }}
     >
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 cursor-pointer flex-shrink-0">
           <Image
             src="/logorafael.png"
             alt="Eu Não Aceito Maus Tratos"
-            width={68}
-            height={68}
+            width={95}
+            height={95}
             style={{ borderRadius: 10 }}
           />
           <span className="hidden sm:flex flex-col leading-tight uppercase tracking-tight">
-            <span className="font-bold text-white" style={{ fontSize: 14 }}>EU NÃO ACEITO</span>
-            <span className="font-bold" style={{ fontSize: 16, color: "#d8610c" }}>MAUS TRATOS</span>
+            <span className="font-bold text-white" style={{ fontSize: 20 }}>EU NÃO ACEITO</span>
+            <span className="font-bold" style={{ fontSize: 22, color: "#d8610c" }}>MAUS TRATOS</span>
           </span>
         </Link>
 

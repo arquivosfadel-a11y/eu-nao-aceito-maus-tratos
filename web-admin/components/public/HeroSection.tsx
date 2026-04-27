@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 
 const PAWS = [
@@ -96,7 +97,7 @@ export function HeroSection() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "#050A06",
+        background: "linear-gradient(160deg, #0a1f12 0%, #1B4332 50%, #0d2b1a 100%)",
         overflow: "hidden",
       }}
     >
@@ -112,7 +113,7 @@ export function HeroSection() {
       {/* Vinheta */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 85% 80% at 50% 50%, transparent 40%, #050A06 100%)",
+        background: "radial-gradient(ellipse 85% 80% at 50% 50%, transparent 40%, #0a1f12 100%)",
       }} />
 
       {/* Glow laranja canto superior direito */}
@@ -162,37 +163,26 @@ export function HeroSection() {
           <span>Abril Laranja — Prevenção contra Maus Tratos a Animais</span>
         </motion.div>
 
-        {/* Título linha 1 */}
-        <div style={{ overflow: "hidden", marginBottom: 4 }}>
-          <motion.h1
-            variants={wordReveal}
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        {/* Logotipo principal */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          style={{ marginBottom: 28, filter: "drop-shadow(0 8px 32px rgba(216,97,12,0.25))" }}
+        >
+          <Image
+            src="/logotipo.png"
+            alt="Eu Não Aceito Maus Tratos"
+            width={520}
+            height={200}
             style={{
-              fontSize: "clamp(42px, 8vw, 80px)", fontWeight: 900,
-              color: "#ffffff", letterSpacing: "-2px", lineHeight: 1.05, margin: 0,
+              width: "clamp(280px, 50vw, 520px)",
+              height: "auto",
+              objectFit: "contain",
             }}
-          >
-            EU NÃO ACEITO
-          </motion.h1>
-        </div>
-
-        {/* Título linha 2 */}
-        <div style={{ overflow: "hidden", marginBottom: 28 }}>
-          <motion.h1
-            variants={wordReveal}
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-            style={{
-              fontSize: "clamp(42px, 8vw, 80px)", fontWeight: 900,
-              color: "#d8610c", letterSpacing: "-2px", lineHeight: 1.05, margin: 0,
-            }}
-          >
-            MAUS TRATOS.
-          </motion.h1>
-        </div>
+            priority
+          />
+        </motion.div>
 
         {/* Linha decorativa */}
         <motion.div
