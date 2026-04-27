@@ -34,9 +34,10 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permite requisições sem origin (ex: curl, mobile, Postman)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Permite qualquer subdomínio *.vercel.app (previews e produção)
+    if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin)) return callback(null, true);
     callback(new Error(`Origem não permitida pelo CORS: ${origin}`));
   },
   credentials: true
