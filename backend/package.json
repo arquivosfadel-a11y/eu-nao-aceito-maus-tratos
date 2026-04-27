@@ -1,7 +1,7 @@
 {
-  "name": "participa-cidade-backend",
+  "name": "eu-nao-aceito-maus-tratos-backend",
   "version": "1.0.0",
-  "description": "API Backend do Participa Cidade",
+  "description": "API Backend do Eu Não Aceito Maus Tratos",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
