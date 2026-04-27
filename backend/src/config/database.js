@@ -53,13 +53,6 @@ const runMigrations = async () => {
     `ALTER TYPE "enum_messages_sender_role" ADD VALUE IF NOT EXISTS 'validator'`,
     `ALTER TYPE "enum_messages_sender_role" ADD VALUE IF NOT EXISTS 'admin'`,
     `ALTER TYPE "enum_messages_sender_role" ADD VALUE IF NOT EXISTS 'system'`,
-    `CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      name VARCHAR NOT NULL,
-      email VARCHAR NOT NULL UNIQUE,
-      "createdAt" TIMESTAMP DEFAULT NOW(),
-      "updatedAt" TIMESTAMP DEFAULT NOW()
-    )`,
   ];
   for (const sql of migrations) {
     try {
